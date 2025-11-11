@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="grid">
+  <div class="card">
+    <h2>Banker Dashboard</h2>
+    <p class="kicker">Overview of applications and KYC activity.</p>
+    <div class="cta" style="margin-top:6px">
+      <a class="btn" href="/banker">KYC Lookup</a>
+    </div>
+  </div>
+  <div class="card" id="metrics">
+    <h3>Key metrics</h3>
+    <div class="stats">
+      <div><strong id="m-total-kyc">0</strong><span>Total KYC</span></div>
+      <div><strong id="m-verified-kyc">0</strong><span>Verified KYC</span></div>
+      <div><strong id="m-total-loans">0</strong><span>Total Loans</span></div>
+      <div><strong id="m-approved-loans">0</strong><span>Approved Loans</span></div>
+    </div>
+  </div>
+  <div class="card" id="charts">
+    <h3>Last 14 days</h3>
+    <div class="kicker">Applications received and KYC created per day</div>
+    <div id="series-chart" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h3>Recent KYC</h3>
+    <table class="table" id="tbl-kyc">
+      <thead>
+        <tr><th>KYC ID</th><th>Name</th><th>Status</th><th>Created</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Recent Loan Applications</h3>
+    <table class="table" id="tbl-loans">
+      <thead>
+        <tr><th>ID</th><th>Status</th><th>Created</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Application Tracker</h3>
+    <div class="grid" style="margin-bottom:10px">
+      <label>
+        <span>Status</span>
+        <select id="flt-status">
+          <option value="">Any</option>
+          <option value="draft">Draft</option>
+          <option value="submitted">Submitted</option>
+          <option value="under_review">Under Review</option>
+          <option value="approved">Approved</option>
+          <option value="declined">Declined</option>
+        </select>
+      </label>
+      <label>
+        <span>From</span>
+        <input type="date" id="flt-from" />
+      </label>
+      <label>
+        <span>To</span>
+        <input type="date" id="flt-to" />
+      </label>
+      <div class="actions" style="align-self:end">
+        <button class="btn" id="btn-apply">Apply Filters</button>
+      </div>
+    </div>
+    <table class="table" id="tbl-tracker">
+      <thead>
+        <tr><th>ID</th><th>Applicant</th><th>Email</th><th>Amount</th><th>Term</th><th>Status</th><th>Created</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(async function(){
+  // Fetch summary
+  try{
+    const sRes = await fetch('/api/banker/analytics/summary', {credentials:'include'});
+    const s = await sRes.json();
+    if(sRes.ok){
+      byId('m-total-kyc').textContent = s.total_kyc;
+      byId('m-verified-kyc').textContent = s.verified_kyc;
+      byId('m-total-loans').textContent = s.total_loans;
+      byId('m-approved-loans').textContent = s.approved_loans;
+    }
+  }catch{}
+
+  // Fetch series
+  try{
+    const r = await fetch('/api/banker/analytics/series', {credentials:'include'});
+    const data = await r.json();
+    if(!r.ok) return;
+    const series = data.series||[];
+    // Simple bar chart using divs
+    const max = Math.max(1, ...series.map(d=>Math.max(d.loans, d.kyc)));
+    const wrap = document.createElement('div');
+    wrap.style.display = 'grid';
+    wrap.style.gridTemplateColumns = `repeat(${series.length}, 1fr)`;
+    wrap.style.alignItems = 'end';
+    wrap.style.gap = '6px';
+    series.forEach(d=>{
+      const col = document.createElement('div');
+      col.style.display='grid';
+      col.style.gridTemplateRows='1fr auto';
+      const bars = document.createElement('div');
+      bars.style.display='grid';
+      bars.style.gridTemplateRows='1fr';
+      bars.style.gap='3px';
+      const k = document.createElement('div');
+      k.title = `KYC: ${d.kyc}`;
+      k.style.height = (Math.round((d.kyc/max)*120)+2)+'px';
+      k.style.background = '#0EA5E9';
+      k.style.borderRadius='6px 6px 0 0';
+      const l = document.createElement('div');
+      l.title = `Loans: ${d.loans}`;
+      l.style.height = (Math.round((d.loans/max)*120)+2)+'px';
+      l.style.background = '#2563EB';
+      l.style.borderRadius='6px 6px 0 0';
+      const stack = document.createElement('div');
+      stack.style.display='grid';
+      stack.style.gap='2px';
+      stack.appendChild(k);
+      stack.appendChild(l);
+      bars.appendChild(stack);
+      const label = document.createElement('div');
+      label.textContent = d.date.slice(5);
+      label.style.fontSize='10px';
+      label.style.color='#64748b';
+      label.style.textAlign='center';
+      col.appendChild(bars);
+      col.appendChild(label);
+      wrap.appendChild(col);
+    });
+    const sc = document.getElementById('series-chart');
+    if(sc){ sc.innerHTML=''; sc.appendChild(wrap); }
+  }catch{}
+
+  // Recent KYC
+  try{
+    const r = await fetch('/api/banker/analytics/recent-kyc', {credentials:'include'});
+    const data = await r.json();
+    if(r.ok){
+      const tb = document.querySelector('#tbl-kyc tbody');
+      tb.innerHTML = '';
+      (data.items||[]).forEach(it=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${it.kyc_id||''}</td><td>${it.name||''}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+  }catch{}
+
+  // Recent loans
+  try{
+    const r = await fetch('/api/banker/analytics/recent-loans', {credentials:'include'});
+    const data = await r.json();
+    if(r.ok){
+      const tb = document.querySelector('#tbl-loans tbody');
+      tb.innerHTML = '';
+      (data.items||[]).forEach(it=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${it.id}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+  }catch{}
+
+  // Tracker fetcher
+  async function loadTracker(){
+    const qs = new URLSearchParams();
+    const s = byId('flt-status').value.trim();
+    const f = byId('flt-from').value.trim();
+    const t = byId('flt-to').value.trim();
+    if(s) qs.set('status', s);
+    if(f) qs.set('from', f);
+    if(t) qs.set('to', t);
+    const r = await fetch('/api/banker/applications?'+qs.toString(), {credentials:'include'});
+    const data = await r.json();
+    if(r.ok){
+      const tb = document.querySelector('#tbl-tracker tbody');
+      tb.innerHTML = '';
+      (data.items||[]).forEach(it=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${it.id}</td><td>${it.full_name||''}</td><td>${it.email||''}</td><td>${it.amount||''}</td><td>${it.term||''}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+        tb.appendChild(tr);
+      });
+      if((data.items||[]).length===0){
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="7">No applications for selected filters.</td>';
+        tb.appendChild(tr);
+      }
+    }
+  }
+  byId('btn-apply').addEventListener('click', loadTracker);
+  loadTracker();
+})();
+</script>
+{% endblock %}

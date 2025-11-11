@@ -1,0 +1,28 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Person illustration">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#6c5ce7"/>
+      <stop offset="100%" stop-color="#00b0ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" rx="24" fill="url(#bg)" opacity="0.22"/>
+  <g transform="translate(250,80)">
+    <!-- Head -->
+    <circle cx="150" cy="80" r="60" fill="#f2d1c9"/>
+    <!-- Hair -->
+    <path d="M95,80 q55,-70 110,0 v20 h-110z" fill="#2b2a3b"/>
+    <!-- Body -->
+    <rect x="95" y="140" width="110" height="160" rx="20" fill="#1e1e2f"/>
+    <!-- Shoulders -->
+    <path d="M80,180 q65,-40 140,0 v40 h-140z" fill="#2a2940"/>
+    <!-- Left arm -->
+    <rect x="60" y="200" width="30" height="100" rx="14" fill="#1e1e2f"/>
+    <!-- Right arm -->
+    <rect x="205" y="200" width="30" height="100" rx="14" fill="#1e1e2f"/>
+    <!-- Device -->
+    <rect x="80" y="250" width="170" height="110" rx="14" fill="#101021" stroke="#7c74ff" stroke-opacity="0.5"/>
+    <rect x="90" y="265" width="70" height="14" rx="7" fill="#7c74ff" opacity="0.7"/>
+    <rect x="90" y="290" width="120" height="10" rx="5" fill="#00c2ff" opacity="0.6"/>
+    <rect x="90" y="310" width="130" height="10" rx="5" fill="#7c74ff" opacity="0.4"/>
+  </g>
+</svg>

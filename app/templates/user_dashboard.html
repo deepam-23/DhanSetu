@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="grid">
+  <div class="card">
+    <h2>User Dashboard</h2>
+    <p class="kicker">Welcome to DhanSetu. Start or continue your journey.</p>
+    <div class="cta" style="margin-top:6px">
+      <a class="btn" href="/loan">Start/Continue Loan</a>
+      <a class="btn secondary" href="/kyc">Complete KYC</a>
+      <a class="btn secondary" href="/chat">Ask Chatbot</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Next steps</h3>
+    <ul>
+      <li>Fill loan details and save a draft</li>
+      <li>Finalize your KYC to generate signed PDF</li>
+      <li>Track updates via email</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>My KYC</h3>
+    <div id="my-kyc">Loading...</div>
+  </div>
+  <div class="card">
+    <h3>My Applications</h3>
+    <table class="table" id="tbl-my-loans">
+      <thead>
+        <tr><th>ID</th><th>Amount</th><th>Term</th><th>Status</th><th>Created</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+{% block scripts %}
+<script>
+(async function(){
+  // My KYC
+  try{
+    const r = await fetch('/api/kyc/me', {credentials:'include'});
+    const data = await r.json();
+    const box = document.getElementById('my-kyc');
+    if(!r.ok){ box.textContent = (data.error||'No KYC yet'); }
+    else if(!data.exists){ box.innerHTML = 'No KYC yet. <a href="/kyc">Start now</a>.'; }
+    else{
+      const v = (data.verified_at||'').replace('T',' ').replace('Z','');
+      box.innerHTML = `KYC ID: <b>${data.kyc_id||'-'}</b><br/>Status: <b>${data.status}</b><br/>Verified: ${v||'-'} ` + (data.kyc_id? ` | <a href="/api/kyc/me/pdf" target="_blank">Download PDF</a>` : '');
+    }
+  }catch(e){ try{ document.getElementById('my-kyc').textContent='Unable to load KYC'; }catch{} }
+
+  // My loans
+  try{
+    const r = await fetch('/api/loan/my', {credentials:'include'});
+    const data = await r.json();
+    if(r.ok){
+      const tb = document.querySelector('#tbl-my-loans tbody');
+      tb.innerHTML = '';
+      (data.items||[]).forEach(it=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${it.id}</td><td>${it.amount||''}</td><td>${it.term||''}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+        tb.appendChild(tr);
+      });
+      if((data.items||[]).length === 0){
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="5">No applications yet.</td>';
+        tb.appendChild(tr);
+      }
+    }
+  }catch{}
+})();
+</script>
+{% endblock %}
+{% endblock %}

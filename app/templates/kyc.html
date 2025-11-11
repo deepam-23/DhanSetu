@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>KYC</h1>
+
+<div class="card">
+  <div class="actions">
+    <button id="kyc-start" class="btn">Start KYC</button>
+  </div>
+
+  <form id="kyc-form">
+    <div class="grid">
+      <label>
+        <span>Full Name</span>
+        <input type="text" name="name" required />
+      </label>
+      <label>
+        <span>Date of Birth</span>
+        <input type="date" name="dob" required />
+      </label>
+    </div>
+
+    <div class="grid">
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" />
+      </label>
+      <label>
+        <span>Phone</span>
+        <input type="tel" name="phone" />
+      </label>
+    </div>
+
+    <div class="grid">
+      <label>
+        <span>Gov ID Type</span>
+        <select name="gov_id_type">
+          <option value="aadhaar">Aadhaar</option>
+          <option value="pan">PAN</option>
+          <option value="passport">Passport</option>
+          <option value="generic" selected>Other</option>
+        </select>
+      </label>
+      <label>
+        <span>Gov ID Number</span>
+        <input type="text" name="gov_id" required />
+      </label>
+    </div>
+
+    <div class="grid">
+      <label class="full">
+        <span>Address</span>
+        <input type="text" name="address" required />
+      </label>
+    </div>
+
+    <div class="grid">
+      <label class="full">
+        <span>Address Line 2</span>
+        <input type="text" name="address2" />
+      </label>
+    </div>
+
+    <div class="grid">
+      <label>
+        <span>City</span>
+        <input type="text" name="city" />
+      </label>
+      <label>
+        <span>State</span>
+        <input type="text" name="state" />
+      </label>
+    </div>
+
+    <div class="grid">
+      <label>
+        <span>Pincode</span>
+        <input type="text" name="pincode" />
+      </label>
+      <label>
+        <span>ID Issuer</span>
+        <input type="text" name="id_issuer" />
+      </label>
+    </div>
+
+    <div class="grid">
+      <label>
+        <span>ID Expiry</span>
+        <input type="date" name="id_expiry" />
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn">Finalize KYC</button>
+    </div>
+  </form>
+
+  <div id="kyc-result" class="result" hidden></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  window.KYCUI = { start: "/api/kyc/start", finalize: "/api/kyc/finalize", myPdf: "/api/kyc/me/pdf" };
+  </script>
+{% endblock %}

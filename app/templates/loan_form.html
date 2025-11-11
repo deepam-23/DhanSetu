@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Loan Application</h1>
+
+<form id="loan-form" class="card">
+  <div class="grid">
+    <label>
+      <span>Full Name</span>
+      <input type="text" name="full_name" required />
+    </label>
+    <label>
+      <span>Email</span>
+      <input type="email" name="email" required />
+    </label>
+  </div>
+
+  <div class="grid">
+    <label>
+      <span>Loan Amount (₹)</span>
+      <input type="number" name="amount" min="1000" step="100" required />
+    </label>
+    <label>
+      <span>Term (months)</span>
+      <input type="number" name="term" min="6" max="120" required />
+    </label>
+  </div>
+
+  <div class="grid">
+    <label>
+      <span>Monthly Income (₹)</span>
+      <input type="number" name="income" min="0" step="100" required />
+    </label>
+    <label>
+      <span>Existing EMIs (₹/month)</span>
+      <input type="number" name="emi" min="0" step="100" value="0" />
+    </label>
+  </div>
+
+  <div class="grid">
+    <label>
+      <span>Employment Type</span>
+      <select name="employment_type">
+        <option value="salaried">Salaried</option>
+        <option value="self_employed">Self-employed</option>
+        <option value="student">Student</option>
+        <option value="retired">Retired</option>
+        <option value="other" selected>Other</option>
+      </select>
+    </label>
+    <label>
+      <span>Employer / Business Name</span>
+      <input type="text" name="employer" />
+    </label>
+  </div>
+
+  <div class="grid">
+    <label>
+      <span>Residence Type</span>
+      <select name="residence_type">
+        <option value="owned">Owned</option>
+        <option value="rented">Rented</option>
+        <option value="parental">Parental</option>
+        <option value="pg_hostel">PG/Hostel</option>
+      </select>
+    </label>
+    <label>
+      <span>Credit Score (optional)</span>
+      <input type="number" name="credit_score" min="300" max="900" step="1" placeholder="e.g. 750" />
+    </label>
+  </div>
+
+  <div class="grid">
+    <label class="full">
+      <span>Purpose</span>
+      <input type="text" name="purpose" />
+    </label>
+  </div>
+  <p class="kicker">Tip: Higher credit score and lower existing EMIs improve eligibility.</p>
+
+  <div class="actions">
+    <button type="submit" class="btn">Save Draft</button>
+    <button type="button" id="eligibility-btn" class="btn secondary">Check Eligibility</button>
+  </div>
+
+  <div id="loan-result" class="result" hidden></div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  window.LoanUI = { endpoint: "/api/loan/save-draft" };
+</script>
+{% endblock %}

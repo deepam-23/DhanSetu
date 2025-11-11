@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block chat_widget %}{% endblock %}
+{% block content %}
+<section class="chat-page">
+  <div class="chat-hero">
+    <img class="bot-avatar" alt="DhanSetu Bot" src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" />
+    <div>
+      <h1 class="hero-title">Ask DhanSetu</h1>
+      <p class="hero-sub">Your financial assistant for loans, KYC, documents, interest rates, and eligibility.</p>
+    </div>
+  </div>
+  <div class="chat-page-card card">
+    <div id="chatbot-messages" class="chat-messages" data-init="greet" style="height:50vh"></div>
+    <form id="chatbot-form" class="chat-input" autocomplete="off">
+      <input id="chatbot-text" name="message" type="text" placeholder="Type your question..." required />
+      <button type="submit" class="btn">Send</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

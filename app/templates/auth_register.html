@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="grid">
+  <div class="card">
+    <h2>Create Account</h2>
+    <p class="kicker">Join and start your loan journey.</p>
+    <div id="reg-alert"></div>
+    <form class="form" id="reg-form" onsubmit="return false;">
+      <label class="label">Name</label>
+      <input class="input" id="reg-name" placeholder="Your name" />
+      <label class="label">Email</label>
+      <input class="input" id="reg-email" type="email" placeholder="you@example.com" />
+      <label class="label">Password</label>
+      <input class="input" id="reg-password" type="password" placeholder="At least 8 characters" />
+      <button class="btn-primary" id="reg-btn">Create Account</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  byId('reg-btn').addEventListener('click', async ()=>{
+    const name = byId('reg-name').value.trim();
+    const email = byId('reg-email').value.trim();
+    const password = byId('reg-password').value;
+    const res = await postJSON('/api/auth/register', {name, email, password});
+    const alert = byId('reg-alert');
+    if(res.ok){ alert.innerHTML='<div class="alert success">Account created. Redirecting to login…</div>'; setTimeout(()=>location.href='/login', 800); }
+    else{ alert.innerHTML='<div class="alert error">'+(res.data.error||'Registration failed')+'</div>'; }
+  });
+</script>
+{% endblock %}

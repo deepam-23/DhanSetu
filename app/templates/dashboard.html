@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block chat_widget %}{% endblock %}
+{% block content %}
+<section class="hero reveal" style="text-align:center;padding:80px 20px">
+  <span class="badge" style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(20,20,34,.6);margin-bottom:16px">Welcome</span>
+  <h1 class="hero-title" style="font-size:52px;font-weight:800;margin-bottom:16px">Smarter Loans with AI</h1>
+  <p class="hero-sub" style="font-size:18px;max-width:560px;margin:0 auto 32px;color:#e5e7eb">Apply, verify KYC, and get instant eligibility — simple, secure, fast.</p>
+  <div class="cta" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <a class="btn" href="/loan" style="padding:12px 24px;font-size:16px">Start Loan Application</a>
+    <a class="btn secondary" href="/kyc" style="padding:12px 24px;font-size:16px">Complete KYC</a>
+    <a class="btn secondary" href="/banker" style="padding:12px 24px;font-size:16px">Banker Portal</a>
+  </div>
+  <div class="stats" style="display:flex;justify-content:center;gap:48px;margin-top:48px">
+    <div style="text-align:center"><strong style="display:block;font-size:24px;color:#fff">2 min</strong><span style="color:var(--muted)">to start</span></div>
+    <div style="text-align:center"><strong style="display:block;font-size:24px;color:#fff">Instant</strong><span style="color:var(--muted)">eligibility</span></div>
+    <div style="text-align:center"><strong style="display:block;font-size:24px;color:#fff">Secure</strong><span style="color:var(--muted)">PDF KYC</span></div>
+  </div>
+</section>
+
+<section class="card reveal" style="overflow:hidden">
+  <div class="logos" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;opacity:.9">
+    <img src="https://dummyimage.com/100x28/7c3aed/ffffff&text=Visa" alt="Visa"/>
+    <img src="https://dummyimage.com/120x28/2563eb/ffffff&text=Mastercard" alt="Mastercard"/>
+    <img src="https://dummyimage.com/100x28/1D4ED8/ffffff&text=RBI" alt="RBI"/>
+    <img src="https://dummyimage.com/120x28/7c3aed/ffffff&text=NPCI" alt="NPCI"/>
+  </div>
+</section>
+
+<section class="features grid reveal">
+  <div class="feature-card card"><div class="inner"><h3>Fast Application</h3><p>Fill essential details and save drafts anytime.</p></div></div>
+  <div class="feature-card card"><div class="inner"><h3>Secure KYC</h3><p>Signed PDF with checksum and QR for verification.</p></div></div>
+  <div class="feature-card card"><div class="inner"><h3>Banker Verify</h3><p>Validate identity and file integrity in seconds.</p></div></div>
+  <div class="feature-card card"><div class="inner"><h3>Transparent</h3><p>Clear eligibility and EMI estimates up front.</p></div></div>
+</section>
+
+<section class="card reveal" style="text-align:center;padding:40px 20px">
+  <h3 style="font-size:28px;margin-bottom:24px">How it works</h3>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px">
+    <div><strong style="display:block;font-size:20px;margin-bottom:8px">1. Sign up</strong><p style="color:var(--muted)">Create your account in seconds.</p></div>
+    <div><strong style="display:block;font-size:20px;margin-bottom:8px">2. KYC</strong><p style="color:var(--muted)">Complete KYC to generate a signed PDF.</p></div>
+    <div><strong style="display:block;font-size:20px;margin-bottom:8px">3. Apply</strong><p style="color:var(--muted)">Check eligibility instantly.</p></div>
+    <div><strong style="display:block;font-size:20px;margin-bottom:8px">4. Verify</strong><p style="color:var(--muted)">Banker validates and processes.</p></div>
+  </div>
+</section>
+
+<section class="card reveal" style="text-align:center;padding:40px 20px">
+  <h3 style="font-size:28px;margin-bottom:24px">Why choose us</h3>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px">
+    <div><strong style="display:block;font-size:20px;margin-bottom:8px">Instant eligibility</strong><p style="color:var(--muted)">Clear EMI estimates up front.</p></div>
+    <div><strong style="display:block;font-size:20px;margin-bottom:8px">Secure KYC</strong><p style="color:var(--muted)">Signed PDFs with checksum & QR.</p></div>
+    <div><strong style="display:block;font-size:20px;margin-bottom:8px">Banker tools</strong><p style="color:var(--muted)">Analytics dashboard and tracker.</p></div>
+    <div><strong style="display:block;font-size:20px;margin-bottom:8px">Simple UI</strong><p style="color:var(--muted)">Modern, clean experience.</p></div>
+  </div>
+</section>
+
+<section class="card reveal" style="text-align:center;padding:40px 20px">
+  <h3 style="font-size:28px;margin-bottom:24px">FAQ</h3>
+  <div style="max-width:640px;margin:0 auto;text-align:left">
+    <details style="margin:12px 0"><summary style="cursor:pointer;padding:8px 0">How is my identity secured?</summary><p style="padding:0 0 8px 0;color:var(--muted)">Your KYC PDF includes a checksum and a signed QR payload that bankers can verify server-side.</p></details>
+    <details style="margin:12px 0"><summary style="cursor:pointer;padding:8px 0">Can I download my KYC later?</summary><p style="padding:0 0 8px 0;color:var(--muted)">Yes. After finalization, you can download it anytime from the KYC page.</p></details>
+    <details style="margin:12px 0"><summary style="cursor:pointer;padding:8px 0">Do I need to finish my loan in one session?</summary><p style="padding:0 0 8px 0;color:var(--muted)">No. You can save a draft and continue later.</p></details>
+  </div>
+</section>
+
+<section class="card reveal" style="text-align:center;padding:40px 20px">
+  <h3 style="font-size:28px;margin-bottom:16px">Ready to get started?</h3>
+  <p class="kicker" style="color:var(--muted);margin-bottom:24px">Create an account and complete your KYC in minutes.</p>
+  <div class="cta" style="display:flex;justify-content:center;gap:12px">
+    <a class="btn" href="/register" style="padding:12px 24px;font-size:16px">Create Account</a>
+    <a class="btn secondary" href="/login" style="padding:12px 24px;font-size:16px">Sign In</a>
+  </div>
+</section>
+
+<section class="site-foot">
+  <div>  LoanAI • Built with Flask</div>
+  <div class="links"><a href="/">Home</a><a href="/loan">Loan</a><a href="/kyc">KYC</a><a href="/banker">Banker</a></div>
+</section>
+{% block scripts %}
+<script>
+  (function(){
+    const els = document.querySelectorAll('.reveal');
+    if('IntersectionObserver' in window){
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target);} });
+      }, { root:null, threshold:0.15 });
+      els.forEach(el=>io.observe(el));
+    }else{
+      els.forEach(el=>el.classList.add('show'));
+    }
+  })();
+</script>
+{% endblock %}
+{% endblock %}

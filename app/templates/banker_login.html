@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="grid">
+  <div class="card">
+    <h2>Banker Login</h2>
+    <p class="kicker">Sign in to access the banker dashboard and KYC tools.</p>
+    <div id="b-login-alert"></div>
+    <form class="form" id="b-login-form" onsubmit="return false;">
+      <label class="label">Email</label>
+      <input class="input" id="b-login-email" type="email" placeholder="you@bank.com" />
+      <label class="label">Password</label>
+      <input class="input" id="b-login-password" type="password" placeholder="••••••••" />
+      <button class="btn" id="b-login-btn">Sign In</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Applicant?</h2>
+    <p class="kicker">Use the regular login for users to apply and complete KYC.</p>
+    <a class="btn secondary" href="/login">User Login</a>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  byId('b-login-btn').addEventListener('click', async ()=>{
+    const email = byId('b-login-email').value.trim();
+    const password = byId('b-login-password').value;
+    const res = await postJSON('/api/auth/banker/login', {email, password});
+    const alert = byId('b-login-alert');
+    if(res.ok){ alert.innerHTML='<div class="alert success">Logged in</div>'; setTimeout(()=>location.href='/banker-dashboard', 600); }
+    else{ alert.innerHTML='<div class="alert error">'+(res.data.error||'Login failed')+'</div>'; }
+  });
+</script>
+{% endblock %}

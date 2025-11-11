@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title or 'DhanSetu' }}</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="theme-corporate">
+  <nav class="nav">
+    <div class="brand">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSNuYXnn6Xn2JB-QAvRajXUudK2ErhHlCPfKjQh1MFusWbdYm_fpJMfDwTLRW6sGFhqP8&usqp=CAU" alt="DhanSetu" />
+      <span class="brand-text">Dhan<span>Setu</span></span>
+    </div>
+    <div class="links">
+      <a href="/">Home</a>
+      <a href="/loan">Loan</a>
+      <a href="/kyc">KYC</a>
+      <a href="/banker">Banker</a>
+      <a href="/chat" id="nav-chat-link">Chat</a>
+      {% if banker.id %}
+        <a href="/banker-dashboard">Banker Dashboard</a>
+      {% elif current_user.is_authenticated %}
+        <a href="/user-dashboard">My Dashboard</a>
+      {% endif %}
+      <a href="/login">Login</a>
+      <a href="/register" class="btn">Sign Up</a>
+    </div>
+  </nav>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer-columns">
+    <div class="container footer-grid">
+      <div class="col">
+        <h4>Main Office</h4>
+        <p>DhanSetu HQ<br/>123 Finance Park<br/>Mumbai, MH 400001</p>
+        <p>Mon–Fri, 9:00–18:00</p>
+      </div>
+      <div class="col">
+        <h4>Customer Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Status</a></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Cookie Settings</a></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Related Links</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Banker Portal</a></li>
+          <li><a href="#">KYC</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="container foot-bar">
+      <div>© {{ (now or '') if false else '' }} DhanSetu • All rights reserved</div>
+      <div class="links">
+        <a href="/">Home</a>
+        <a href="/loan">Loan</a>
+        <a href="/kyc">KYC</a>
+        <a href="/banker">Banker</a>
+      </div>
+    </div>
+  </footer>
+  {% block chat_widget %}
+  <!-- Chatbot widget -->
+  <div id="chatbot" class="chatbot" aria-live="polite">
+    <button id="chatbot-toggle" class="chat-toggle" aria-expanded="false" aria-controls="chatbot-panel">Chat</button>
+    <div id="chatbot-panel" class="chat-panel" hidden>
+      <div class="chat-header">
+        <strong>Ask DhanSetu</strong>
+        <button id="chatbot-close" class="chat-close" aria-label="Close chat">×</button>
+      </div>
+      <div id="chatbot-messages" class="chat-messages"></div>
+      <form id="chatbot-form" class="chat-input" autocomplete="off">
+        <input id="chatbot-text" name="message" type="text" placeholder="Ask about loans, KYC, EMI..." required />
+        <button type="submit" class="btn">Send</button>
+      </form>
+    </div>
+  </div>
+  {% endblock %}
+  <script src="/static/js/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
