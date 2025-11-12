@@ -18,7 +18,7 @@
       <a href="/banker-dashboard" class="active">Dashboard</a>
       <a href="/banker">KYC Lookup</a>
       <a href="/chat">Chat</a>
-      <a href="/auth/banker/logout" class="btn">Logout</a>
+      <button id="btn-logout" class="btn">Logout</button>
     </div>
   </nav>
 
@@ -57,6 +57,19 @@
           <table class="table" id="tbl-kyc">
             <thead>
               <tr><th>KYC ID</th><th>Name</th><th>Status</th><th>Created</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Eligible Candidates -->
+      <div class="dashboard-card">
+        <h3>Eligible Candidates</h3>
+        <div class="table-container">
+          <table class="table" id="tbl-eligible">
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Email</th><th>Amount</th><th>Term</th><th>Created</th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -121,6 +134,17 @@
     function byId(id) { return document.getElementById(id); }
 
     (async function(){
+      // Logout handler
+      const lg = document.getElementById('btn-logout');
+      if(lg){
+        lg.addEventListener('click', async ()=>{
+          try{
+            await fetch('/api/auth/banker/logout', {method:'POST', credentials:'include'});
+          }catch{}
+          location.href = '/banker-login';
+        });
+      }
+
       // Fetch summary
       try{
         const sRes = await fetch('/api/banker/analytics/summary', {credentials:'include'});
@@ -168,6 +192,26 @@
           if((data.items||[]).length === 0){
             const tr = document.createElement('tr');
             tr.innerHTML = '<td colspan="3">No recent loan applications</td>';
+            tb.appendChild(tr);
+          }
+        }
+      }catch{}
+
+      // Eligible candidates
+      try{
+        const r = await fetch('/api/banker/applications', {credentials:'include'});
+        const data = await r.json();
+        if(r.ok){
+          const tb = document.querySelector('#tbl-eligible tbody');
+          tb.innerHTML = '';
+          (data.items||[]).filter(it=> (it.prediction||'').toLowerCase()==='eligible').slice(0,20).forEach(it=>{
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${it.id}</td><td>${it.full_name||''}</td><td>${it.email||''}</td><td>${it.amount||''}</td><td>${it.term||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+            tb.appendChild(tr);
+          });
+          if(tb.children.length===0){
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="6">No eligible candidates yet.</td>';
             tb.appendChild(tr);
           }
         }
@@ -252,7 +296,7 @@
     
     .dashboard-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
       gap: 24px;
     }
     

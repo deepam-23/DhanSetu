@@ -165,12 +165,13 @@
       }
       
       try {
-        const endpoint = userType === 'banker' ? '/auth/banker/login' : '/auth/login';
+        const endpoint = userType === 'banker' ? '/api/auth/banker/login' : '/api/auth/login';
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ email, password })
         });
         

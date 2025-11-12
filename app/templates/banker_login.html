@@ -1,25 +1,142 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+  /* Page grid layout */
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  /* Card style */
+  .card {
+    background: #1f1f2e;
+    border-radius: 16px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    color: white;
+    padding: 2rem;
+    width: 320px;
+    text-align: center;
+  }
+
+  .card h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  .card .kicker {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Form styles */
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .label {
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .input {
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #555;
+    background-color: #2a2a3d;
+    color: white;
+    outline: none;
+    font-size: 0.95rem;
+  }
+
+  .input::placeholder {
+    color: rgba(255,255,255,0.6);
+  }
+
+  .btn {
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #5c63ff;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .btn:hover {
+    background-color: #4349ff;
+  }
+
+  .btn.secondary {
+    background-color: #333;
+  }
+
+  .btn.secondary:hover {
+    background-color: #444;
+  }
+
+  /* Alert styles */
+  .alert {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+  .alert.success {
+    background-color: #2ecc71;
+    color: #fff;
+  }
+  .alert.error {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+</style>
+
 <div class="grid">
   <div class="card">
     <h2>Banker Login</h2>
     <p class="kicker">Sign in to access the banker dashboard and KYC tools.</p>
     <div id="b-login-alert"></div>
+
     <form class="form" id="b-login-form" onsubmit="return false;">
-      <label class="label">Email</label>
-      <input class="input" id="b-login-email" type="email" placeholder="you@bank.com" />
-      <label class="label">Password</label>
-      <input class="input" id="b-login-password" type="password" placeholder="••••••••" />
+      <div>
+        <label class="label">Email</label>
+        <input class="input" id="b-login-email" type="email" placeholder="you@bank.com" />
+      </div>
+      <div>
+        <label class="label">Password</label>
+        <input class="input" id="b-login-password" type="password" placeholder="••••••••" />
+      </div>
       <button class="btn" id="b-login-btn">Sign In</button>
     </form>
   </div>
+
   <div class="card">
-    <h2>Applicant?</h2>
-    <p class="kicker">Use the regular login for users to apply and complete KYC.</p>
-    <a class="btn secondary" href="/login">User Login</a>
+    <h2>Create Banker Account</h2>
+    <p class="kicker">Create a banker account to access the dashboard and KYC tools.</p>
+    <div id="b-reg-alert"></div>
+    <form class="form" id="b-reg-form" onsubmit="return false;">
+      <div>
+        <label class="label">Email</label>
+        <input class="input" id="b-reg-email" type="email" placeholder="you@bank.com" />
+      </div>
+      <div>
+        <label class="label">Password</label>
+        <input class="input" id="b-reg-password" type="password" placeholder="At least 8 characters" />
+      </div>
+      <button class="btn secondary" id="b-reg-btn">Register Banker</button>
+    </form>
   </div>
 </div>
 {% endblock %}
+
 {% block scripts %}
 <script>
   byId('b-login-btn').addEventListener('click', async ()=>{
@@ -27,8 +144,23 @@
     const password = byId('b-login-password').value;
     const res = await postJSON('/api/auth/banker/login', {email, password});
     const alert = byId('b-login-alert');
-    if(res.ok){ alert.innerHTML='<div class="alert success">Logged in</div>'; setTimeout(()=>location.href='/banker-dashboard', 600); }
-    else{ alert.innerHTML='<div class="alert error">'+(res.data.error||'Login failed')+'</div>'; }
+    if(res.ok){
+      alert.innerHTML='<div class="alert success">Logged in</div>';
+      setTimeout(()=>location.href='/banker-dashboard', 600);
+    } else {
+      alert.innerHTML='<div class="alert error">'+(res.data.error||'Login failed')+'</div>';
+    }
+  });
+  byId('b-reg-btn').addEventListener('click', async ()=>{
+    const email = byId('b-reg-email').value.trim();
+    const password = byId('b-reg-password').value;
+    const res = await postJSON('/api/auth/banker/register', {email, password});
+    const alert = byId('b-reg-alert');
+    if(res.ok){
+      alert.innerHTML='<div class="alert success">Banker account created. You can now sign in above.</div>';
+    } else {
+      alert.innerHTML='<div class="alert error">'+(res.data.error||'Registration failed')+'</div>';
+    }
   });
 </script>
 {% endblock %}

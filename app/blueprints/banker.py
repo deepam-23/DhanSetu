@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from flask import session
 from ..extensions import db, limiter
-from ..models import KycRecord, KycPdf, LoanApplication
+from ..models import KycRecord, KycPdf, LoanApplication, User
+from sqlalchemy import func
 from ..services.id_service import sign_payload
 
 bp = Blueprint("banker", __name__)
-
 
 @bp.before_request
 def require_banker_session():
@@ -63,6 +63,90 @@ def lookup(kyc_id: str):
         return jsonify({"error": f"Lookup failed: {str(e) or 'unknown'}"}), 400
 
 
+# ----- Analytics for banker dashboard -----
+
+@bp.get("/analytics/summary")
+def analytics_summary():
+    total_kyc = db.session.execute(db.select(func.count()).select_from(KycRecord)).scalar() or 0
+    verified_kyc = db.session.execute(
+        db.select(func.count()).select_from(KycRecord).filter(KycRecord.status == "verified")
+    ).scalar() or 0
+    total_loans = db.session.execute(db.select(func.count()).select_from(LoanApplication)).scalar() or 0
+    approved_loans = db.session.execute(
+        db.select(func.count()).select_from(LoanApplication).filter(LoanApplication.status == "approved")
+    ).scalar() or 0
+    return jsonify({
+        "total_kyc": int(total_kyc),
+        "verified_kyc": int(verified_kyc),
+        "total_loans": int(total_loans),
+        "approved_loans": int(approved_loans),
+    })
+
+
+@bp.get("/analytics/recent-kyc")
+def analytics_recent_kyc():
+    rows = db.session.execute(
+        db.select(KycRecord).order_by(KycRecord.created_at.desc()).limit(10)
+    ).scalars().all()
+    items = []
+    for r in rows:
+        items.append({
+            "kyc_id": r.kyc_id,
+            "name": r.name,
+            "status": r.status,
+            "created_at": r.created_at.isoformat() + "Z" if r.created_at else "",
+        })
+    return jsonify({"items": items})
+
+
+@bp.get("/analytics/recent-loans")
+def analytics_recent_loans():
+    rows = db.session.execute(
+        db.select(LoanApplication).order_by(LoanApplication.created_at.desc()).limit(10)
+    ).scalars().all()
+    items = []
+    for a in rows:
+        items.append({
+            "id": a.id,
+            "status": a.status,
+            "created_at": a.created_at.isoformat() + "Z" if a.created_at else "",
+        })
+    return jsonify({"items": items})
+
+
+@bp.get("/applications")
+def applications():
+    q = db.select(LoanApplication).order_by(LoanApplication.created_at.desc())
+    status = (request.args.get("status") or "").strip()
+    if status:
+        q = q.filter(LoanApplication.status == status)
+    # Optional date filters (YYYY-MM-DD)
+    dt_from = (request.args.get("from") or "").strip()
+    dt_to = (request.args.get("to") or "").strip()
+    # Lightweight date filtering using string compare to keep simple (SQLite)
+    if dt_from:
+        q = q.filter(func.date(LoanApplication.created_at) >= dt_from)
+    if dt_to:
+        q = q.filter(func.date(LoanApplication.created_at) <= dt_to)
+
+    rows = db.session.execute(q.limit(200)).scalars().all()
+    items = []
+    for a in rows:
+        u = db.session.get(User, a.user_id)
+        dj = a.data_json or {}
+        items.append({
+            "id": a.id,
+            "status": a.status,
+            "created_at": a.created_at.isoformat() + "Z" if a.created_at else "",
+            "full_name": (dj.get("full_name") or dj.get("name") or "").strip(),
+            "email": (u.email if u else ""),
+            "amount": dj.get("amount"),
+            "term": dj.get("term"),
+            "prediction": a.prediction,
+        })
+    return jsonify({"items": items})
+
+
 @bp.get("/kyc/<string:kyc_id>/pdf")
 @limiter.limit("10/minute")
 def download_pdf(kyc_id: str):
@@ -72,19 +156,42 @@ def download_pdf(kyc_id: str):
     return send_file(pdf.pdf_url, mimetype="application/pdf")
 
 
-@bp.get("/analytics/summary")
+@bp.post("/verify")
 @limiter.limit("30/minute")
-def analytics_summary():
-    total_kyc = db.session.execute(db.select(db.func.count()).select_from(KycRecord)).scalar()
-    verified_kyc = db.session.execute(db.select(db.func.count()).select_from(KycRecord).filter_by(status="verified")).scalar()
-    total_loans = db.session.execute(db.select(db.func.count()).select_from(LoanApplication)).scalar()
-    approved_loans = db.session.execute(db.select(db.func.count()).select_from(LoanApplication).filter_by(status="approved")).scalar()
+def verify_qr():
+    data = request.get_json(silent=True) or {}
+    payload = data.get("payload") or {}
+    sig = (data.get("sig") or data.get("signature") or "").strip()
+    kyc_id = (payload.get("kyc_id") or data.get("kyc_id") or "").strip()
+    pdf_checksum = (payload.get("pdf_checksum") or data.get("pdf_checksum") or "").strip()
+    issued_at = (payload.get("issued_at") or data.get("issued_at") or "").strip()
+    if not kyc_id or not sig:
+        return jsonify({"ok": False, "error": "Missing fields"}), 400
+    # Verify signature
+    expected = sign_payload({"kyc_id": kyc_id, "pdf_checksum": pdf_checksum, "issued_at": issued_at})
+    if expected != sig:
+        return jsonify({"ok": False, "error": "Signature mismatch"}), 400
+    # Verify KYC and checksum
+    kyc = db.session.execute(db.select(KycRecord).filter_by(kyc_id=kyc_id)).scalar_one_or_none()
+    if not kyc:
+        return jsonify({"ok": False, "error": "KYC not found"}), 404
+    pdf = db.session.execute(db.select(KycPdf).filter_by(kyc_id=kyc_id)).scalar_one_or_none()
+    if not pdf:
+        return jsonify({"ok": False, "error": "KYC PDF not found"}), 404
+    checksum_ok = (not pdf_checksum) or (pdf.pdf_checksum == pdf_checksum)
     return jsonify({
-        "total_kyc": total_kyc or 0,
-        "verified_kyc": verified_kyc or 0,
-        "total_loans": total_loans or 0,
-        "approved_loans": approved_loans or 0,
+        "ok": True,
+        "checksum_ok": checksum_ok,
+        "kyc": {
+            "kyc_id": kyc.kyc_id,
+            "name": kyc.name,
+            "status": kyc.status,
+        },
+        "pdf_checksum": pdf.pdf_checksum,
     })
+
+
+# Note: summary route already defined above without the limiter; avoid duplicate definitions
 
 
 @bp.get("/analytics/series")

@@ -2,6 +2,113 @@
 {% block content %}
 <h1>KYC</h1>
 
+<style>
+  /* --- Card Container --- */
+  .card {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* --- Buttons above the form --- */
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* --- KYC Form Layout --- */
+  #kyc-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #333;
+  }
+
+  label span {
+    margin-bottom: 6px;
+    font-size: 15px;
+  }
+
+  input,
+  select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  label.full {
+    grid-column: span 2;
+  }
+
+  /* --- Buttons --- */
+  .btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .btn:hover {
+    background-color: #0056b3;
+  }
+
+  .btn.secondary {
+    background-color: #6c757d;
+  }
+
+  .btn.secondary:hover {
+    background-color: #5a6268;
+  }
+
+  /* --- KYC Result Box --- */
+  #kyc-result {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 6px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 700px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    label.full {
+      grid-column: span 1;
+    }
+  }
+</style>
+
 <div class="card">
   <div class="actions">
     <button id="kyc-start" class="btn">Start KYC</button>
@@ -22,11 +129,27 @@
     <div class="grid">
       <label>
         <span>Email</span>
-        <input type="email" name="email" />
+        <div style="display:flex; gap:8px; align-items:center">
+          <input type="email" name="email" id="kyc-email" />
+          <button type="button" class="btn secondary" id="otp-email-send">Send OTP</button>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px; align-items:center">
+          <input type="text" id="otp-email-code" placeholder="Enter email OTP" />
+          <button type="button" class="btn secondary" id="otp-email-verify">Verify</button>
+        </div>
+        <small id="otp-email-status"></small>
       </label>
       <label>
         <span>Phone</span>
-        <input type="tel" name="phone" />
+        <div style="display:flex; gap:8px; align-items:center">
+          <input type="tel" name="phone" id="kyc-phone" />
+          <button type="button" class="btn secondary" id="otp-phone-send">Send OTP</button>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px; align-items:center">
+          <input type="text" id="otp-phone-code" placeholder="Enter phone OTP" />
+          <button type="button" class="btn secondary" id="otp-phone-verify">Verify</button>
+        </div>
+        <small id="otp-phone-status"></small>
       </label>
     </div>
 
@@ -97,8 +220,108 @@
   <div id="kyc-result" class="result" hidden></div>
 </div>
 {% endblock %}
+
 {% block scripts %}
 <script>
-  window.KYCUI = { start: "/api/kyc/start", finalize: "/api/kyc/finalize", myPdf: "/api/kyc/me/pdf" };
-  </script>
+  window.KYCUI = { 
+    start: "/api/kyc/start", 
+    finalize: "/api/kyc/finalize", 
+    myPdf: "/api/kyc/me/pdf" 
+  };
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const emailInput = document.getElementById('kyc-email');
+    const phoneInput = document.getElementById('kyc-phone');
+    const emailSend = document.getElementById('otp-email-send');
+    const emailVerify = document.getElementById('otp-email-verify');
+    const phoneSend = document.getElementById('otp-phone-send');
+    const phoneVerify = document.getElementById('otp-phone-verify');
+    const emailStatus = document.getElementById('otp-email-status');
+    const phoneStatus = document.getElementById('otp-phone-status');
+
+    // --- Selfie capture ---
+    const selfiePanel = document.createElement('div');
+    selfiePanel.className = 'card';
+    selfiePanel.style.maxWidth = '900px';
+    selfiePanel.style.margin = '16px auto';
+    selfiePanel.innerHTML = `
+      <h3>Capture Selfie (optional but recommended)</h3>
+      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+        <video id="selfie-video" autoplay playsinline style="width:320px; height:240px; background:#000; border-radius:6px"></video>
+        <canvas id="selfie-canvas" width="320" height="240" style="display:none"></canvas>
+        <img id="selfie-preview" alt="Preview" style="width:160px; height:120px; object-fit:cover; border:1px solid #ddd; border-radius:6px" />
+      </div>
+      <div class="actions" style="margin-top:12px; justify-content:flex-start; gap:8px">
+        <button type="button" class="btn" id="selfie-open">Open Camera</button>
+        <button type="button" class="btn secondary" id="selfie-capture">Capture</button>
+        <button type="button" class="btn secondary" id="selfie-upload">Upload</button>
+        <small id="selfie-status" style="margin-left:8px"></small>
+      </div>
+    `;
+    const card = document.querySelector('.card');
+    if(card) card.parentNode.insertBefore(selfiePanel, card.nextSibling);
+
+    let mediaStream;
+    const v = document.getElementById('selfie-video');
+    const c = document.getElementById('selfie-canvas');
+    const p = document.getElementById('selfie-preview');
+    const st = document.getElementById('selfie-status');
+    const btnOpen = document.getElementById('selfie-open');
+    const btnCap = document.getElementById('selfie-capture');
+    const btnUp = document.getElementById('selfie-upload');
+    if(btnOpen){ btnOpen.addEventListener('click', async ()=>{
+      try{
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 320, height: 240 } });
+        v.srcObject = mediaStream;
+        st.textContent = 'Camera ready';
+      }catch(e){ st.textContent = 'Camera error: ' + e; }
+    }); }
+    if(btnCap){ btnCap.addEventListener('click', ()=>{
+      if(!v || !c) return; const ctx = c.getContext('2d');
+      ctx.drawImage(v, 0, 0, c.width, c.height);
+      p.src = c.toDataURL('image/png');
+      st.textContent = 'Captured preview';
+    }); }
+    if(btnUp){ btnUp.addEventListener('click', async ()=>{
+      try{
+        const dataUrl = p && p.src ? p.src : (c ? c.toDataURL('image/png') : '');
+        if(!dataUrl){ st.textContent = 'Capture a photo first'; return; }
+        const r = await postJSON('/api/kyc/upload-selfie', { image_data: dataUrl });
+        st.textContent = r.ok ? 'Selfie uploaded' : (r.data.error || 'Upload failed');
+      }catch(err){ st.textContent = 'Upload error'; }
+    }); }
+
+    async function sendOTP(channel, value){
+      const r = await postJSON('/api/kyc/otp/send', {channel, value});
+      return r;
+    }
+    async function verifyOTP(channel, value, code){
+      const r = await postJSON('/api/kyc/otp/verify', {channel, value, code});
+      return r;
+    }
+    if(emailSend){ emailSend.addEventListener('click', async ()=>{
+      const value = (emailInput&&emailInput.value||'').trim();
+      if(!value){ emailStatus.textContent='Enter email'; return; }
+      const r = await sendOTP('email', value);
+      emailStatus.textContent = r.ok? ('OTP sent to email' + (r.data && r.data.debug ? ' (code: '+r.data.debug+')' : '')) : (r.data.error||'Failed');
+    }); }
+    if(emailVerify){ emailVerify.addEventListener('click', async ()=>{
+      const value = (emailInput&&emailInput.value||'').trim();
+      const code = (document.getElementById('otp-email-code').value||'').trim();
+      const r = await verifyOTP('email', value, code);
+      emailStatus.textContent = r.ok? 'Email verified' : (r.data.error||'Failed');
+    }); }
+    if(phoneSend){ phoneSend.addEventListener('click', async ()=>{
+      const value = (phoneInput&&phoneInput.value||'').trim();
+      if(!value){ phoneStatus.textContent='Enter phone'; return; }
+      const r = await sendOTP('phone', value);
+      phoneStatus.textContent = r.ok? ('OTP sent to phone' + (r.data && r.data.debug ? ' (code: '+r.data.debug+')' : '')) : (r.data.error||'Failed');
+    }); }
+    if(phoneVerify){ phoneVerify.addEventListener('click', async ()=>{
+      const value = (phoneInput&&phoneInput.value||'').trim();
+      const code = (document.getElementById('otp-phone-code').value||'').trim();
+      const r = await verifyOTP('phone', value, code);
+      phoneStatus.textContent = r.ok? 'Phone verified' : (r.data.error||'Failed');
+    }); }
+  });
+</script>
 {% endblock %}

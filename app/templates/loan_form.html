@@ -2,6 +2,117 @@
 {% block content %}
 <h1>Loan Application</h1>
 
+<style>
+  /* --- Form Container --- */
+  #loan-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* --- Grid Rows --- */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  /* --- Labels & Inputs --- */
+  label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #333;
+  }
+
+  label span {
+    margin-bottom: 6px;
+    font-size: 15px;
+  }
+
+  input,
+  select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  /* --- Full Width Field (Purpose) --- */
+  label.full {
+    grid-column: span 2;
+  }
+
+  /* --- Actions Buttons --- */
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .btn.secondary {
+    background-color: #6c757d;
+  }
+
+  .btn:hover {
+    background-color: #0056b3;
+  }
+
+  .btn.secondary:hover {
+    background-color: #5a6268;
+  }
+
+  /* --- Tips & Results --- */
+  .kicker {
+    color: #666;
+    font-size: 14px;
+    margin-top: 0.5rem;
+  }
+
+  #loan-result {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 6px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+  }
+
+  /* --- Responsive Design --- */
+  @media (max-width: 700px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    label.full {
+      grid-column: span 1;
+    }
+  }
+</style>
+
 <form id="loan-form" class="card">
   <div class="grid">
     <label>
@@ -75,6 +186,7 @@
       <input type="text" name="purpose" />
     </label>
   </div>
+
   <p class="kicker">Tip: Higher credit score and lower existing EMIs improve eligibility.</p>
 
   <div class="actions">
@@ -85,6 +197,7 @@
   <div id="loan-result" class="result" hidden></div>
 </form>
 {% endblock %}
+
 {% block scripts %}
 <script>
   window.LoanUI = { endpoint: "/api/loan/save-draft" };

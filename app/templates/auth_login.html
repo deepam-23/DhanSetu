@@ -1,18 +1,132 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+  /* Grid layout */
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  /* Card styling */
+  .card {
+    background: #1f1f2e;
+    border-radius: 16px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    color: white;
+    padding: 2rem;
+    width: 320px;
+    text-align: center;
+  }
+
+  .card h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  .card .kicker {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Form layout */
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .label {
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .input {
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #555;
+    background-color: #2a2a3d;
+    color: white;
+    outline: none;
+    font-size: 0.95rem;
+  }
+
+  .input::placeholder {
+    color: rgba(255,255,255,0.6);
+  }
+
+  .btn-primary {
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #5c63ff;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .btn-primary:hover {
+    background-color: #4349ff;
+  }
+
+  .btn-secondary {
+    display: inline-block;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background-color: #333;
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.3s;
+  }
+
+  .btn-secondary:hover {
+    background-color: #444;
+  }
+
+  /* Alerts */
+  .alert {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .alert.success {
+    background-color: #2ecc71;
+    color: #fff;
+  }
+
+  .alert.error {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+</style>
+
 <div class="grid">
   <div class="card">
     <h2>Login</h2>
     <p class="kicker">Welcome back. Sign in to continue.</p>
     <div id="login-alert"></div>
+
     <form class="form" id="login-form" onsubmit="return false;">
-      <label class="label">Email</label>
-      <input class="input" id="login-email" type="email" placeholder="you@example.com" />
-      <label class="label">Password</label>
-      <input class="input" id="login-password" type="password" placeholder="••••••••" />
+      <div>
+        <label class="label">Email</label>
+        <input class="input" id="login-email" type="email" placeholder="you@example.com" />
+      </div>
+      <div>
+        <label class="label">Password</label>
+        <input class="input" id="login-password" type="password" placeholder="••••••••" />
+      </div>
       <button class="btn-primary" id="login-btn">Sign In</button>
     </form>
   </div>
+
   <div class="card">
     <h2>New here?</h2>
     <p class="kicker">Create your account to start your application.</p>
@@ -20,6 +134,7 @@
   </div>
 </div>
 {% endblock %}
+
 {% block scripts %}
 <script>
   byId('login-btn').addEventListener('click', async ()=>{
@@ -27,8 +142,12 @@
     const password = byId('login-password').value;
     const res = await postJSON('/api/auth/login', {email, password});
     const alert = byId('login-alert');
-    if(res.ok){ alert.innerHTML='<div class="alert success">Logged in</div>'; setTimeout(()=>location.href='/user-dashboard', 600); }
-    else{ alert.innerHTML='<div class="alert error">'+(res.data.error||'Login failed')+'</div>'; }
+    if(res.ok){
+      alert.innerHTML='<div class="alert success">Logged in</div>';
+      setTimeout(()=>location.href='/user-dashboard', 600);
+    } else {
+      alert.innerHTML='<div class="alert error">'+(res.data.error||'Login failed')+'</div>';
+    }
   });
 </script>
 {% endblock %}

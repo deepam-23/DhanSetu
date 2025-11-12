@@ -1,13 +1,15 @@
 import io
+import os
 import hashlib
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from flask import current_app
 import qrcode
 from reportlab.lib.utils import ImageReader
+from qrcode.constants import ERROR_CORRECT_H
 
 
-def generate_kyc_pdf(kyc_data: dict, qr_text: str) -> tuple[bytes, str]:
+def generate_kyc_pdf(kyc_data: dict, qr_text: str, selfie_path: str | None = None) -> tuple[bytes, str]:
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     width, height = A4
@@ -21,12 +23,30 @@ def generate_kyc_pdf(kyc_data: dict, qr_text: str) -> tuple[bytes, str]:
         c.drawString(50, y, f"{k}: {v}")
         y -= 18
 
-    img = qrcode.make(qr_text)
+    # Optional selfie in top-right
+    if selfie_path and os.path.exists(selfie_path):
+        try:
+            selfie_reader = ImageReader(selfie_path)
+            c.drawImage(selfie_reader, width - 220, height - 260, 170, 170, preserveAspectRatio=True, mask='auto')
+            c.setFont("Helvetica", 9)
+            c.drawString(width - 220, height - 270, "Photo")
+        except Exception:
+            pass
+
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=ERROR_CORRECT_H,
+        box_size=8,
+        border=2,
+    )
+    qr.add_data(qr_text)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
     img_buf = io.BytesIO()
     img.save(img_buf, format="PNG")
     img_buf.seek(0)
     qr_image = ImageReader(img_buf)
-    c.drawImage(qr_image, width - 200, 50, 150, 150)
+    c.drawImage(qr_image, width - 220, 50, 170, 170, mask='auto')
 
     c.showPage()
     c.save()

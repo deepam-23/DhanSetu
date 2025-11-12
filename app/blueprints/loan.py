@@ -22,9 +22,40 @@ def save_draft():
 
     loan.data_json = payload.get("data") or {}
     loan.status = "draft"
+    # Compute simple eligibility and store in prediction
+    try:
+        d = loan.data_json or {}
+        amount = float(d.get("amount") or 0)
+        term = int(d.get("term") or 0)
+        income = float(d.get("income") or 0)
+        emi_existing = float(d.get("emi") or 0)
+        credit = float(d.get("credit_score") or 0)
+        emp = str(d.get("employment_type") or '').lower()
+        res = str(d.get("residence_type") or '').lower()
+
+        annual_rate = 0.14
+        r = annual_rate/12.0
+        emi_needed = int(round((amount*r*(1+r)**term)/(((1+r)**term-1) if term>0 else 1))) if term>0 and amount>0 else 0
+
+        capacity = max(0.0, income - emi_existing)
+        boost = 0.0
+        if credit >= 800: boost += 0.12
+        elif credit >= 750: boost += 0.08
+        elif credit >= 700: boost += 0.04
+        if emp == 'salaried': boost += 0.05
+        elif emp == 'self_employed': boost += 0.02
+        if res == 'owned': boost += 0.03
+        elif res == 'parental': boost += 0.01
+        boosted_capacity = int(round(capacity * (1 + boost)))
+
+        eligible = (boosted_capacity >= emi_needed and amount>0 and term>0)
+        loan.prediction = 'eligible' if eligible else 'ineligible'
+    except Exception:
+        # If parsing fails, leave prediction unchanged
+        pass
     db.session.commit()
 
-    return jsonify({"id": loan.id, "status": loan.status, "data": loan.data_json})
+    return jsonify({"id": loan.id, "status": loan.status, "data": loan.data_json, "prediction": loan.prediction})
 
 
 @bp.get("/my")

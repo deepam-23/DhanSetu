@@ -1,20 +1,54 @@
 {% extends 'base.html' %}
 {% block chat_widget %}{% endblock %}
 {% block content %}
-<section class="chat-page">
-  <div class="chat-hero">
-    <img class="bot-avatar" alt="DhanSetu Bot" src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" />
-    <div>
-      <h1 class="hero-title">Ask DhanSetu</h1>
-      <p class="hero-sub">Your financial assistant for loans, KYC, documents, interest rates, and eligibility.</p>
-    </div>
+
+<!-- Navbar -->
+<nav class="chat-navbar">
+  <div class="nav-left">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="DhanSetu Bot" class="nav-logo">
+    <h2 class="nav-title">DhanSetu</h2>
   </div>
-  <div class="chat-page-card card">
-    <div id="chatbot-messages" class="chat-messages" data-init="greet" style="height:50vh"></div>
-    <form id="chatbot-form" class="chat-input" autocomplete="off">
-      <input id="chatbot-text" name="message" type="text" placeholder="Type your question..." required />
-      <button type="submit" class="btn">Send</button>
-    </form>
+  <div class="nav-right">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/about" class="nav-link">About</a>
+    <a href="/support" class="nav-link">Support</a>
+  </div>
+</nav>
+
+<!-- Chat Section -->
+<section class="chat-wrapper">
+  <div class="chat-container">
+    <!-- Sidebar -->
+    <aside class="chat-sidebar">
+      <div class="sidebar-header">
+        <h3>Chats</h3>
+      </div>
+      <div class="chat-list">
+        <div class="chat-user active">
+          <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot">
+          <span>DhanSetu Bot</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="chat-main">
+      <div class="chat-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot">
+        <div>
+          <h4>DhanSetu Bot</h4>
+          <p>Online</p>
+        </div>
+      </div>
+
+      <div id="chatbot-messages" class="chat-messages" data-init="greet"></div>
+
+      <form id="chatbot-form" class="chat-input" autocomplete="off">
+        <input id="chatbot-text" name="message" type="text" placeholder="Type your message..." required />
+        <button type="submit" class="btn">Send</button>
+      </form>
+    </main>
   </div>
 </section>
+
 {% endblock %}
