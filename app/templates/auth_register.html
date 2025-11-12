@@ -1,32 +1,203 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="grid">
-  <div class="card">
-    <h2>Create Account</h2>
-    <p class="kicker">Join and start your loan journey.</p>
-    <div id="reg-alert"></div>
-    <form class="form" id="reg-form" onsubmit="return false;">
-      <label class="label">Name</label>
-      <input class="input" id="reg-name" placeholder="Your name" />
-      <label class="label">Email</label>
-      <input class="input" id="reg-email" type="email" placeholder="you@example.com" />
-      <label class="label">Password</label>
-      <input class="input" id="reg-password" type="password" placeholder="At least 8 characters" />
-      <button class="btn-primary" id="reg-btn">Create Account</button>
-    </form>
-  </div>
-</div>
-{% endblock %}
-{% block scripts %}
-<script>
-  byId('reg-btn').addEventListener('click', async ()=>{
-    const name = byId('reg-name').value.trim();
-    const email = byId('reg-email').value.trim();
-    const password = byId('reg-password').value;
-    const res = await postJSON('/api/auth/register', {name, email, password});
-    const alert = byId('reg-alert');
-    if(res.ok){ alert.innerHTML='<div class="alert success">Account created. Redirecting to login…</div>'; setTimeout(()=>location.href='/login', 800); }
-    else{ alert.innerHTML='<div class="alert error">'+(res.data.error||'Registration failed')+'</div>'; }
-  });
-</script>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account - DhanSetu</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+</head>
+
+<body class="home-bg">
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-right: 8px;">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-text">Dhan</span><span>Setu</span>
+    </div>
+    <div class="links">
+      <a href="/">Home</a>
+      <a href="/register" class="active">Register</a>
+      <a href="/login">Login</a>
+      <a href="/chat">Chat</a>
+    </div>
+  </nav>
+
+  <!-- Registration Section -->
+  <section class="container reveal">
+    <div class="login-container">
+      <h2>Create Account</h2>
+      <p class="register-subtitle">Join and start your loan journey.</p>
+      <div id="reg-alert"></div>
+      <form id="reg-form" class="login-form">
+        <div class="form-group">
+          <label for="reg-name" class="form-label">Name</label>
+          <input type="text" id="reg-name" name="name" placeholder="Your full name" required class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="reg-email" class="form-label">Email</label>
+          <input type="email" id="reg-email" name="email" placeholder="you@example.com" required class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="reg-password" class="form-label">Password</label>
+          <input type="password" id="reg-password" name="password" placeholder="At least 8 characters" required class="form-input">
+        </div>
+        
+        <button type="submit" class="btn login-btn">Create Account</button>
+        <p class="register-link">
+          Already have an account? <a href="/login">Login here</a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer-columns">
+    <div class="footer-grid">
+      <div>
+        <h4>About DhanSetu</h4>
+        <p>Making finance simple, smart, and secure for Indian families and freelancers.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/register">Register</a></li>
+          <li><a href="/login">Login</a></li>
+          <li><a href="/chat">Chat Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Connect</h4>
+        <p>Email: support@dhansetu.in</p>
+        <p>Phone: +91 98765 43210</p>
+      </div>
+    </div>
+    <div class="site-foot">
+      <p>© 2025 DhanSetu. All Rights Reserved.</p>
+      <div class="links">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('reg-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      
+      if (!name || !email || !password) {
+        showAlert('Please fill in all fields', 'error');
+        return;
+      }
+      
+      if (password.length < 8) {
+        showAlert('Password must be at least 8 characters', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          showAlert('Account created successfully! Redirecting to login...', 'success');
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+        } else {
+          showAlert(data.error || 'Registration failed', 'error');
+        }
+      } catch (error) {
+        showAlert('An error occurred. Please try again.', 'error');
+      }
+    });
+    
+    function showAlert(message, type) {
+      const alertDiv = document.getElementById('reg-alert');
+      alertDiv.innerHTML = `<div class="alert ${type}">${message}</div>`;
+      
+      setTimeout(() => {
+        alertDiv.innerHTML = '';
+      }, 5000);
+    }
+  </script>
+
+  <style>
+    .register-subtitle {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--white);
+      font-weight: 500;
+      font-size: 18px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 18px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+      font-size: 18px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--acc);
+      background: rgba(255,255,255,.15);
+      box-shadow: 0 0 0 2px rgba(37,99,235,.2);
+    }
+    
+    .form-input::placeholder {
+      color: rgba(255,255,255,.6);
+      font-size: 16px;
+    }
+    
+    .alert {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 16px;
+    }
+    
+    .alert.success {
+      background: rgba(34,197,94,.2);
+      border: 1px solid rgba(34,197,94,.3);
+      color: #22c55e;
+    }
+    
+    .alert.error {
+      background: rgba(248,113,113,.2);
+      border: 1px solid rgba(248,113,113,.3);
+      color: #f87171;
+    }
+  </style>
+</body>
+</html>

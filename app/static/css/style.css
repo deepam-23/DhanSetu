@@ -40,6 +40,7 @@ body.home-bg {
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  background-blend-mode: overlay;
 }
 
 /* Navigation */
@@ -55,7 +56,14 @@ body.home-bg {
 
 .nav .brand {
   font-weight: 800;
-  font-size: 1.4rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+.nav .brand svg {
+  color: var(--pri);
 }
 
 .nav .brand span {
@@ -82,9 +90,7 @@ body.home-bg {
 
 .nav .links .btn {
   padding: 8px 14px;
-  border-radius: 10px;
   background: linear-gradient(135deg, var(--pri), var(--acc));
-  box-shadow: 0 8px 20px rgba(108,92,231,.35);
 }
 
 /* Hero Section */
@@ -96,17 +102,14 @@ body.home-bg {
 
 .hero {
   padding: 40px 20px;
-  border-radius: 22px;
   background: rgba(20,20,34,.7);
   border: 1px solid rgba(255,255,255,.08);
-  box-shadow: var(--shadow);
 }
 
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 28px;
-  align-items: center;
+.hero-content {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .hero-title {
@@ -133,7 +136,6 @@ body.home-bg {
   color: #fff;
   background: linear-gradient(135deg, var(--pri), var(--acc));
   padding: 10px 16px;
-  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
   text-decoration: none;
@@ -148,9 +150,7 @@ body.home-bg {
 .image-card img {
   width: 100%;
   height: auto;
-  border-radius: 12px;
   display: block;
-  box-shadow: 0 10px 20px rgba(0,0,0,.4);
 }
 
 /* Stats */
@@ -166,7 +166,6 @@ body.home-bg {
   background: rgba(20,20,34,.6);
   border: 1px solid rgba(255,255,255,.08);
   padding: 10px 12px;
-  border-radius: 12px;
   display: flex;
   flex-direction: column;
   min-width: 110px;
@@ -199,7 +198,6 @@ body.home-bg {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 18px;
   opacity: .9;
 }
 
@@ -212,15 +210,12 @@ body.home-bg {
   position: relative;
   z-index: 1;
   padding: 22px;
-  border-radius: 18px;
   background: rgba(20,20,34,.8);
-  box-shadow: var(--shadow);
-  transition: transform .2s ease, box-shadow .2s ease;
+  transition: background-color .2s ease;
 }
 
 .feature-card:hover .inner {
-  transform: translateY(-8px);
-  box-shadow: 0 28px 70px rgba(0,0,0,.55);
+  background-color: rgba(30,30,44,.9);
 }
 
 .feature-card h3 {
@@ -239,6 +234,8 @@ body.home-bg {
 .footer-columns {
   border-top: 1px solid rgba(255,255,255,.08);
   margin-top: 40px;
+  background: linear-gradient(135deg, #6b46c1, #9333ea);
+  color: #fff;
 }
 
 .footer-grid {
@@ -250,11 +247,12 @@ body.home-bg {
 
 .footer-columns h4 {
   margin: 0 0 12px;
-  color: #e2e8f0;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .footer-columns p {
-  color: var(--muted);
+  color: rgba(255,255,255,0.9);
   margin: 6px 0;
 }
 
@@ -268,12 +266,13 @@ body.home-bg {
 }
 
 .footer-columns a {
-  color: var(--acc);
+  color: rgba(255,255,255,0.8);
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 .footer-columns a:hover {
-  color: var(--pri-2);
+  color: #ffffff;
 }
 
 .site-foot {
@@ -281,17 +280,19 @@ body.home-bg {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-top: 1px solid rgba(255,255,255,.08);
-  color: var(--muted);
+  border-top: 1px solid rgba(255,255,255,0.2);
+  background: linear-gradient(135deg, #581c87, #6b21a8);
+  color: rgba(255,255,255,0.8);
 }
 
 .site-foot .links a {
-  color: var(--muted);
+  color: rgba(255,255,255,0.8);
   margin: 0 8px;
+  transition: color 0.2s ease;
 }
 
 .site-foot .links a:hover {
-  color: var(--acc);
+  color: #ffffff;
 }
 
 /* Chatbot */
@@ -304,24 +305,102 @@ body.home-bg {
 
 .chat-toggle {
   border: 0;
-  border-radius: 999px;
   background: #2563EB;
   color: #fff;
   padding: 12px 16px;
   cursor: pointer;
-  box-shadow: 0 10px 20px rgba(0,0,0,.15);
 }
 
 .chat-toggle:hover {
   background: #1D4ED8;
 }
 
+/* Login Form Styles */
+.login-container {
+  max-width: 450px;
+  margin: 40px auto;
+  padding: 40px;
+  background: rgba(20,20,34,.8);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #fff;
+  font-size: 28px;
+}
+
+.login-form .form-group {
+  margin-bottom: 25px;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--white);
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.login-form input,
+.login-form select {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  color: #fff;
+  font-size: 16px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.login-form input:focus,
+.login-form select:focus {
+  outline: none;
+  border-color: var(--acc);
+  background: rgba(255,255,255,.15);
+  box-shadow: 0 0 0 2px rgba(37,99,235,.2);
+}
+
+.login-form input::placeholder {
+  color: rgba(255,255,255,.6);
+  font-size: 15px;
+}
+
+.login-form select option {
+  background: var(--bg2);
+  color: #fff;
+  padding: 10px;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 15px;
+  border-radius: 4px;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 25px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.register-link a {
+  color: var(--acc);
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  color: var(--pri-2);
+}
+
 /* Responsive */
 @media (max-width: 900px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
-  }
-
   .hero-title {
     font-size: 32px;
   }
@@ -330,7 +409,8 @@ body.home-bg {
     flex-wrap: wrap;
   }
 
-  .image-card img {
-    margin-top: 20px;
+  .login-container {
+    margin: 20px auto;
+    padding: 30px 20px;
   }
 }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DhanSetu - Your Financial Partner</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
 </head>
 
@@ -12,48 +12,45 @@
   <!-- Navigation -->
   <nav class="nav">
     <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-right: 8px;">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       <span class="brand-text">Dhan</span><span>Setu</span>
     </div>
     <div class="links">
-      <a href="index.html" class="active">Home</a>
-      <a href="features.html">Features</a>
-      <a href="pricing.html">Pricing</a>
-      <a href="get-started.html">Get Started</a>
-      <a href="contact.html">Contact</a>
-      <a href="chatbot.html" class="btn">Chat</a>
+      <a href="/" class="active">Home</a>
+      <a href="/register">Register</a>
+      <a href="/login">Login</a>
+      <a href="/chat">Chat</a>
     </div>
   </nav>
 
   <!-- Hero Section -->
   <section class="hero container reveal">
-    <div class="hero-grid">
-      <div>
-        <h1 class="hero-title">Your Family CFO. Smarter Financial Decisions, Personalized for You.</h1>
-        <p class="hero-sub">
-          Manage all your expenses, goals, and investments in one place.  
-          Get AI-powered insights and secure financial tracking built just for families and freelancers.
-        </p>
-        <div class="cta">
-          <a href="get-started.html" class="btn">Try DhanSetu Free</a>
-          <a href="features.html" class="btn secondary">Explore Features</a>
-        </div>
-        <div class="stats">
-          <div>
-            <strong>10k+</strong>
-            <span>Active Users</span>
-          </div>
-          <div>
-            <strong>₹50 Cr+</strong>
-            <span>Tracked Transactions</span>
-          </div>
-          <div>
-            <strong>100%</strong>
-            <span>Data Privacy</span>
-          </div>
-        </div>
+    <div class="hero-content">
+      <h1 class="hero-title">Your Digital Financial Partner. Smart Loans & KYC Solutions for Modern India.</h1>
+      <p class="hero-sub">
+        Apply for loans, complete KYC verification, and manage your financial journey all in one secure platform. 
+        Built for individuals and businesses with AI-powered insights and instant processing.
+      </p>
+      <div class="cta">
+        <a href="#login" class="btn">Get Started</a>
       </div>
-      <div class="image-card">
-        <img src="https://templatemag.com/wp-content/uploads/financehawk-financial-website-template.jpg" alt="Finance dashboard preview" />
+      <div class="stats">
+        <div>
+          <strong>10k+</strong>
+          <span>Active Users</span>
+        </div>
+        <div>
+          <strong>₹50 Cr+</strong>
+          <span>Tracked Transactions</span>
+        </div>
+        <div>
+          <strong>100%</strong>
+          <span>Data Privacy</span>
+        </div>
       </div>
     </div>
   </section>
@@ -62,27 +59,60 @@
   <section class="container features grid reveal">
     <div class="feature-card">
       <div class="inner">
-        <h3>AI Budget Coach</h3>
-        <p>Smartly guides your spending to help you save more each month.</p>
+        <h3>Instant Loan Approval</h3>
+        <p>Quick loan processing with AI-powered eligibility checks and fast disbursal for your financial needs.</p>
       </div>
     </div>
     <div class="feature-card">
       <div class="inner">
-        <h3>Goal Tracking</h3>
-        <p>Set goals like “Buy a car” or “Plan a vacation” and get real progress updates.</p>
+        <h3>Digital KYC Verification</h3>
+        <p>Complete paperless KYC with secure document upload and instant verification for faster processing.</p>
       </div>
     </div>
     <div class="feature-card">
       <div class="inner">
-        <h3>Auto Expense Categorization</h3>
-        <p>All your expenses neatly grouped — no manual entry required.</p>
+        <h3>Application Tracking</h3>
+        <p>Real-time status updates on your loan and KYC applications with transparent processing stages.</p>
       </div>
     </div>
     <div class="feature-card">
       <div class="inner">
-        <h3>Data Encryption</h3>
-        <p>Your data stays 100% secure and accessible only to you.</p>
+        <h3>Banker Dashboard</h3>
+        <p>Comprehensive management tools for bankers to review applications and process requests efficiently.</p>
       </div>
+    </div>
+  </section>
+
+  
+  <!-- Login Section -->
+  <section id="login" class="container reveal">
+    <div class="login-container">
+      <h2>Login to DhanSetu</h2>
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="userType">Select Role</label>
+          <select id="userType" name="userType" required>
+            <option value="">Choose your role</option>
+            <option value="user">User</option>
+            <option value="banker">Banker</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+        
+        <button type="submit" class="btn login-btn">Login</button>
+        <p class="register-link">
+          Don't have an account? <a href="/register">Register as User</a>
+        </p>
+      </form>
     </div>
   </section>
 
@@ -121,5 +151,44 @@
   <div class="chatbot">
     <button class="chat-toggle">💬</button>
   </div>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const userType = document.getElementById('userType').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      if (!userType) {
+        alert('Please select your role');
+        return;
+      }
+      
+      try {
+        const endpoint = userType === 'banker' ? '/auth/banker/login' : '/auth/login';
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          if (userType === 'banker') {
+            window.location.href = '/banker-dashboard';
+          } else {
+            window.location.href = '/user-dashboard';
+          }
+        } else {
+          alert(data.error || 'Login failed');
+        }
+      } catch (error) {
+        alert('An error occurred. Please try again.');
+      }
+    });
+  </script>
 </body>
 </html>

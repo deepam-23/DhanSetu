@@ -7,7 +7,7 @@ bp = Blueprint("web", __name__)
 
 @bp.get("/")
 def home():
-    return render_template("dashboard.html", user=current_user if current_user.is_authenticated else None)
+    return render_template("index.html")
 
 
 @bp.get("/login")

@@ -1,73 +1,220 @@
-{% extends 'base.html' %}
-{% block content %}
-<section class="grid">
-  <div class="card">
-    <h2>User Dashboard</h2>
-    <p class="kicker">Welcome to DhanSetu. Start or continue your journey.</p>
-    <div class="cta" style="margin-top:6px">
-      <a class="btn" href="/loan">Start/Continue Loan</a>
-      <a class="btn secondary" href="/kyc">Complete KYC</a>
-      <a class="btn secondary" href="/chat">Ask Chatbot</a>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Next steps</h3>
-    <ul>
-      <li>Fill loan details and save a draft</li>
-      <li>Finalize your KYC to generate signed PDF</li>
-      <li>Track updates via email</li>
-    </ul>
-  </div>
-  <div class="card">
-    <h3>My KYC</h3>
-    <div id="my-kyc">Loading...</div>
-  </div>
-  <div class="card">
-    <h3>My Applications</h3>
-    <table class="table" id="tbl-my-loans">
-      <thead>
-        <tr><th>ID</th><th>Amount</th><th>Term</th><th>Status</th><th>Created</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</section>
-{% block scripts %}
-<script>
-(async function(){
-  // My KYC
-  try{
-    const r = await fetch('/api/kyc/me', {credentials:'include'});
-    const data = await r.json();
-    const box = document.getElementById('my-kyc');
-    if(!r.ok){ box.textContent = (data.error||'No KYC yet'); }
-    else if(!data.exists){ box.innerHTML = 'No KYC yet. <a href="/kyc">Start now</a>.'; }
-    else{
-      const v = (data.verified_at||'').replace('T',' ').replace('Z','');
-      box.innerHTML = `KYC ID: <b>${data.kyc_id||'-'}</b><br/>Status: <b>${data.status}</b><br/>Verified: ${v||'-'} ` + (data.kyc_id? ` | <a href="/api/kyc/me/pdf" target="_blank">Download PDF</a>` : '');
-    }
-  }catch(e){ try{ document.getElementById('my-kyc').textContent='Unable to load KYC'; }catch{} }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Dashboard - DhanSetu</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+</head>
 
-  // My loans
-  try{
-    const r = await fetch('/api/loan/my', {credentials:'include'});
-    const data = await r.json();
-    if(r.ok){
-      const tb = document.querySelector('#tbl-my-loans tbody');
-      tb.innerHTML = '';
-      (data.items||[]).forEach(it=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${it.id}</td><td>${it.amount||''}</td><td>${it.term||''}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
-        tb.appendChild(tr);
-      });
-      if((data.items||[]).length === 0){
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="5">No applications yet.</td>';
-        tb.appendChild(tr);
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="brand">
+      <span class="brand-text">Dhan</span><span>Setu</span>
+    </div>
+    <div class="links">
+      <a href="/user-dashboard" class="active">Dashboard</a>
+      <a href="/loan">Apply Loan</a>
+      <a href="/kyc">KYC</a>
+      <a href="/chat">Chat</a>
+      <a href="/auth/logout" class="btn">Logout</a>
+    </div>
+  </nav>
+
+  <!-- User Dashboard -->
+  <section class="container">
+    <div class="dashboard-header">
+      <h1 class="page-title">User Dashboard</h1>
+      <p class="page-subtitle">Welcome back! Manage your finances here.</p>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- Quick Actions -->
+      <div class="dashboard-card">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+          <a href="/loan" class="btn">Apply for Loan</a>
+          <a href="/kyc" class="btn secondary">Complete KYC</a>
+          <a href="/chat" class="btn secondary">Chat Support</a>
+        </div>
+      </div>
+
+      <!-- My Applications -->
+      <div class="dashboard-card">
+        <h3>My Loan Applications</h3>
+        <div id="loan-applications">
+          <p>Loading your applications...</p>
+        </div>
+      </div>
+
+      <!-- KYC Status -->
+      <div class="dashboard-card">
+        <h3>KYC Status</h3>
+        <div id="kyc-status">
+          <p>Loading KYC information...</p>
+        </div>
+      </div>
+
+      <!-- Next Steps -->
+      <div class="dashboard-card">
+        <h3>Next Steps</h3>
+        <ul class="steps-list">
+          <li>Complete your loan application</li>
+          <li>Submit KYC documents for verification</li>
+          <li>Track your application status</li>
+          <li>Get approved and receive funds</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (async function() {
+      // Load KYC Status
+      try {
+        const response = await fetch('/api/kyc/me', { credentials: 'include' });
+        const data = await response.json();
+        const kycBox = document.getElementById('kyc-status');
+        
+        if (!response.ok) {
+          kycBox.innerHTML = `<p style="color: #f87171;">${data.error || 'Unable to load KYC'}</p>`;
+        } else if (!data.exists) {
+          kycBox.innerHTML = `
+            <p style="color: #fbbf24;">KYC Not Started</p>
+            <p><a href="/kyc" class="btn">Start KYC Now</a></p>
+          `;
+        } else {
+          const verifiedDate = data.verified_at ? new Date(data.verified_at).toLocaleDateString() : 'Not verified';
+          kycBox.innerHTML = `
+            <p><strong>KYC ID:</strong> ${data.kyc_id || '-'}</p>
+            <p><strong>Status:</strong> <span style="color: ${data.status === 'verified' ? '#34d399' : '#fbbf24'}">${data.status}</span></p>
+            <p><strong>Verified:</strong> ${verifiedDate}</p>
+            ${data.kyc_id ? `<p><a href="/api/kyc/me/pdf" target="_blank" class="btn secondary">Download PDF</a></p>` : ''}
+          `;
+        }
+      } catch (error) {
+        document.getElementById('kyc-status').innerHTML = '<p style="color: #f87171;">Unable to load KYC</p>';
+      }
+
+      // Load Loan Applications
+      try {
+        const response = await fetch('/api/loan/my', { credentials: 'include' });
+        const data = await response.json();
+        const loanBox = document.getElementById('loan-applications');
+        
+        if (response.ok && data.items && data.items.length > 0) {
+          let html = '<div class="loan-list">';
+          data.items.forEach(loan => {
+            const statusColor = loan.status === 'approved' ? '#34d399' : loan.status === 'pending' ? '#fbbf24' : '#f87171';
+            html += `
+              <div class="loan-item">
+                <p><strong>Application #${loan.id}</strong></p>
+                <p>Amount: ₹${loan.amount || 'N/A'}</p>
+                <p>Term: ${loan.term || 'N/A'} months</p>
+                <p>Status: <span style="color: ${statusColor}">${loan.status || 'N/A'}</span></p>
+                <p>Created: ${new Date(loan.created_at).toLocaleDateString()}</p>
+              </div>
+            `;
+          });
+          html += '</div>';
+          loanBox.innerHTML = html;
+        } else {
+          loanBox.innerHTML = `
+            <p>No loan applications yet.</p>
+            <p><a href="/loan" class="btn">Apply for Your First Loan</a></p>
+          `;
+        }
+      } catch (error) {
+        document.getElementById('loan-applications').innerHTML = '<p style="color: #f87171;">Unable to load applications</p>';
+      }
+    })();
+  </script>
+
+  <style>
+    .dashboard-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .page-title {
+      font-size: 36px;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    
+    .page-subtitle {
+      color: var(--muted);
+      font-size: 18px;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 40px;
+    }
+    
+    .dashboard-card {
+      background: rgba(20,20,34,.8);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 24px;
+    }
+    
+    .dashboard-card h3 {
+      color: #fff;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .loan-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .loan-item {
+      background: rgba(255,255,255,.05);
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+    
+    .loan-item p {
+      margin: 4px 0;
+      color: var(--white);
+    }
+    
+    .steps-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .steps-list li {
+      color: var(--muted);
+      margin: 12px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    
+    .steps-list li:before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--acc);
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
       }
     }
-  }catch{}
-})();
-</script>
-{% endblock %}
-{% endblock %}
+  </style>
+</body>
+</html>

@@ -1,206 +1,343 @@
-{% extends 'base.html' %}
-{% block content %}
-<section class="grid">
-  <div class="card">
-    <h2>Banker Dashboard</h2>
-    <p class="kicker">Overview of applications and KYC activity.</p>
-    <div class="cta" style="margin-top:6px">
-      <a class="btn" href="/banker">KYC Lookup</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banker Dashboard - DhanSetu</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="brand">
+      <span class="brand-text">Dhan</span><span>Setu</span>
     </div>
-  </div>
-  <div class="card" id="metrics">
-    <h3>Key metrics</h3>
-    <div class="stats">
-      <div><strong id="m-total-kyc">0</strong><span>Total KYC</span></div>
-      <div><strong id="m-verified-kyc">0</strong><span>Verified KYC</span></div>
-      <div><strong id="m-total-loans">0</strong><span>Total Loans</span></div>
-      <div><strong id="m-approved-loans">0</strong><span>Approved Loans</span></div>
+    <div class="links">
+      <a href="/banker-dashboard" class="active">Dashboard</a>
+      <a href="/banker">KYC Lookup</a>
+      <a href="/chat">Chat</a>
+      <a href="/auth/banker/logout" class="btn">Logout</a>
     </div>
-  </div>
-  <div class="card" id="charts">
-    <h3>Last 14 days</h3>
-    <div class="kicker">Applications received and KYC created per day</div>
-    <div id="series-chart" style="margin-top:10px"></div>
-  </div>
+  </nav>
 
-  <div class="card">
-    <h3>Recent KYC</h3>
-    <table class="table" id="tbl-kyc">
-      <thead>
-        <tr><th>KYC ID</th><th>Name</th><th>Status</th><th>Created</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <!-- Banker Dashboard -->
+  <section class="container">
+    <div class="dashboard-header">
+      <h1 class="page-title">Banker Dashboard</h1>
+      <p class="page-subtitle">Manage loan applications and KYC verification</p>
+    </div>
 
-  <div class="card">
-    <h3>Recent Loan Applications</h3>
-    <table class="table" id="tbl-loans">
-      <thead>
-        <tr><th>ID</th><th>Status</th><th>Created</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div class="card">
-    <h3>Application Tracker</h3>
-    <div class="grid" style="margin-bottom:10px">
-      <label>
-        <span>Status</span>
-        <select id="flt-status">
-          <option value="">Any</option>
-          <option value="draft">Draft</option>
-          <option value="submitted">Submitted</option>
-          <option value="under_review">Under Review</option>
-          <option value="approved">Approved</option>
-          <option value="declined">Declined</option>
-        </select>
-      </label>
-      <label>
-        <span>From</span>
-        <input type="date" id="flt-from" />
-      </label>
-      <label>
-        <span>To</span>
-        <input type="date" id="flt-to" />
-      </label>
-      <div class="actions" style="align-self:end">
-        <button class="btn" id="btn-apply">Apply Filters</button>
+    <!-- Key Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <h3>Total KYC</h3>
+        <p class="metric-value" id="m-total-kyc">0</p>
+      </div>
+      <div class="metric-card">
+        <h3>Verified KYC</h3>
+        <p class="metric-value" id="m-verified-kyc">0</p>
+      </div>
+      <div class="metric-card">
+        <h3>Total Loans</h3>
+        <p class="metric-value" id="m-total-loans">0</p>
+      </div>
+      <div class="metric-card">
+        <h3>Approved Loans</h3>
+        <p class="metric-value" id="m-approved-loans">0</p>
       </div>
     </div>
-    <table class="table" id="tbl-tracker">
-      <thead>
-        <tr><th>ID</th><th>Applicant</th><th>Email</th><th>Amount</th><th>Term</th><th>Status</th><th>Created</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</section>
-{% endblock %}
-{% block scripts %}
-<script>
-(async function(){
-  // Fetch summary
-  try{
-    const sRes = await fetch('/api/banker/analytics/summary', {credentials:'include'});
-    const s = await sRes.json();
-    if(sRes.ok){
-      byId('m-total-kyc').textContent = s.total_kyc;
-      byId('m-verified-kyc').textContent = s.verified_kyc;
-      byId('m-total-loans').textContent = s.total_loans;
-      byId('m-approved-loans').textContent = s.approved_loans;
+
+    <div class="dashboard-grid">
+      <!-- Recent KYC -->
+      <div class="dashboard-card">
+        <h3>Recent KYC Applications</h3>
+        <div class="table-container">
+          <table class="table" id="tbl-kyc">
+            <thead>
+              <tr><th>KYC ID</th><th>Name</th><th>Status</th><th>Created</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Loans -->
+      <div class="dashboard-card">
+        <h3>Recent Loan Applications</h3>
+        <div class="table-container">
+          <table class="table" id="tbl-loans">
+            <thead>
+              <tr><th>ID</th><th>Status</th><th>Created</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Application Tracker -->
+      <div class="dashboard-card full-width">
+        <h3>Application Tracker</h3>
+        <div class="filter-section">
+          <div class="filter-grid">
+            <div class="form-group">
+              <label for="flt-status">Status</label>
+              <select id="flt-status">
+                <option value="">Any</option>
+                <option value="draft">Draft</option>
+                <option value="submitted">Submitted</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="declined">Declined</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="flt-from">From</label>
+              <input type="date" id="flt-from" />
+            </div>
+            <div class="form-group">
+              <label for="flt-to">To</label>
+              <input type="date" id="flt-to" />
+            </div>
+            <div class="form-group">
+              <button class="btn" id="btn-apply">Apply Filters</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="table" id="tbl-tracker">
+            <thead>
+              <tr><th>ID</th><th>Applicant</th><th>Email</th><th>Amount</th><th>Term</th><th>Status</th><th>Created</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function byId(id) { return document.getElementById(id); }
+
+    (async function(){
+      // Fetch summary
+      try{
+        const sRes = await fetch('/api/banker/analytics/summary', {credentials:'include'});
+        const s = await sRes.json();
+        if(sRes.ok){
+          byId('m-total-kyc').textContent = s.total_kyc;
+          byId('m-verified-kyc').textContent = s.verified_kyc;
+          byId('m-total-loans').textContent = s.total_loans;
+          byId('m-approved-loans').textContent = s.approved_loans;
+        }
+      }catch{}
+
+      // Recent KYC
+      try{
+        const r = await fetch('/api/banker/analytics/recent-kyc', {credentials:'include'});
+        const data = await r.json();
+        if(r.ok){
+          const tb = document.querySelector('#tbl-kyc tbody');
+          tb.innerHTML = '';
+          (data.items||[]).forEach(it=>{
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${it.kyc_id||''}</td><td>${it.name||''}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+            tb.appendChild(tr);
+          });
+          if((data.items||[]).length === 0){
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="4">No recent KYC applications</td>';
+            tb.appendChild(tr);
+          }
+        }
+      }catch{}
+
+      // Recent loans
+      try{
+        const r = await fetch('/api/banker/analytics/recent-loans', {credentials:'include'});
+        const data = await r.json();
+        if(r.ok){
+          const tb = document.querySelector('#tbl-loans tbody');
+          tb.innerHTML = '';
+          (data.items||[]).forEach(it=>{
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${it.id}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+            tb.appendChild(tr);
+          });
+          if((data.items||[]).length === 0){
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="3">No recent loan applications</td>';
+            tb.appendChild(tr);
+          }
+        }
+      }catch{}
+
+      // Tracker fetcher
+      async function loadTracker(){
+        const qs = new URLSearchParams();
+        const s = byId('flt-status').value.trim();
+        const f = byId('flt-from').value.trim();
+        const t = byId('flt-to').value.trim();
+        if(s) qs.set('status', s);
+        if(f) qs.set('from', f);
+        if(t) qs.set('to', t);
+        const r = await fetch('/api/banker/applications?'+qs.toString(), {credentials:'include'});
+        const data = await r.json();
+        if(r.ok){
+          const tb = document.querySelector('#tbl-tracker tbody');
+          tb.innerHTML = '';
+          (data.items||[]).forEach(it=>{
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${it.id}</td><td>${it.full_name||''}</td><td>${it.email||''}</td><td>${it.amount||''}</td><td>${it.term||''}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+            tb.appendChild(tr);
+          });
+          if((data.items||[]).length===0){
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="7">No applications for selected filters.</td>';
+            tb.appendChild(tr);
+          }
+        }
+      }
+      byId('btn-apply').addEventListener('click', loadTracker);
+      loadTracker();
+    })();
+  </script>
+
+  <style>
+    .dashboard-header {
+      text-align: center;
+      margin-bottom: 40px;
     }
-  }catch{}
-
-  // Fetch series
-  try{
-    const r = await fetch('/api/banker/analytics/series', {credentials:'include'});
-    const data = await r.json();
-    if(!r.ok) return;
-    const series = data.series||[];
-    // Simple bar chart using divs
-    const max = Math.max(1, ...series.map(d=>Math.max(d.loans, d.kyc)));
-    const wrap = document.createElement('div');
-    wrap.style.display = 'grid';
-    wrap.style.gridTemplateColumns = `repeat(${series.length}, 1fr)`;
-    wrap.style.alignItems = 'end';
-    wrap.style.gap = '6px';
-    series.forEach(d=>{
-      const col = document.createElement('div');
-      col.style.display='grid';
-      col.style.gridTemplateRows='1fr auto';
-      const bars = document.createElement('div');
-      bars.style.display='grid';
-      bars.style.gridTemplateRows='1fr';
-      bars.style.gap='3px';
-      const k = document.createElement('div');
-      k.title = `KYC: ${d.kyc}`;
-      k.style.height = (Math.round((d.kyc/max)*120)+2)+'px';
-      k.style.background = '#0EA5E9';
-      k.style.borderRadius='6px 6px 0 0';
-      const l = document.createElement('div');
-      l.title = `Loans: ${d.loans}`;
-      l.style.height = (Math.round((d.loans/max)*120)+2)+'px';
-      l.style.background = '#2563EB';
-      l.style.borderRadius='6px 6px 0 0';
-      const stack = document.createElement('div');
-      stack.style.display='grid';
-      stack.style.gap='2px';
-      stack.appendChild(k);
-      stack.appendChild(l);
-      bars.appendChild(stack);
-      const label = document.createElement('div');
-      label.textContent = d.date.slice(5);
-      label.style.fontSize='10px';
-      label.style.color='#64748b';
-      label.style.textAlign='center';
-      col.appendChild(bars);
-      col.appendChild(label);
-      wrap.appendChild(col);
-    });
-    const sc = document.getElementById('series-chart');
-    if(sc){ sc.innerHTML=''; sc.appendChild(wrap); }
-  }catch{}
-
-  // Recent KYC
-  try{
-    const r = await fetch('/api/banker/analytics/recent-kyc', {credentials:'include'});
-    const data = await r.json();
-    if(r.ok){
-      const tb = document.querySelector('#tbl-kyc tbody');
-      tb.innerHTML = '';
-      (data.items||[]).forEach(it=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${it.kyc_id||''}</td><td>${it.name||''}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
-        tb.appendChild(tr);
-      });
+    
+    .page-title {
+      font-size: 36px;
+      color: #fff;
+      margin-bottom: 10px;
     }
-  }catch{}
-
-  // Recent loans
-  try{
-    const r = await fetch('/api/banker/analytics/recent-loans', {credentials:'include'});
-    const data = await r.json();
-    if(r.ok){
-      const tb = document.querySelector('#tbl-loans tbody');
-      tb.innerHTML = '';
-      (data.items||[]).forEach(it=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${it.id}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
-        tb.appendChild(tr);
-      });
+    
+    .page-subtitle {
+      color: var(--muted);
+      font-size: 18px;
     }
-  }catch{}
-
-  // Tracker fetcher
-  async function loadTracker(){
-    const qs = new URLSearchParams();
-    const s = byId('flt-status').value.trim();
-    const f = byId('flt-from').value.trim();
-    const t = byId('flt-to').value.trim();
-    if(s) qs.set('status', s);
-    if(f) qs.set('from', f);
-    if(t) qs.set('to', t);
-    const r = await fetch('/api/banker/applications?'+qs.toString(), {credentials:'include'});
-    const data = await r.json();
-    if(r.ok){
-      const tb = document.querySelector('#tbl-tracker tbody');
-      tb.innerHTML = '';
-      (data.items||[]).forEach(it=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${it.id}</td><td>${it.full_name||''}</td><td>${it.email||''}</td><td>${it.amount||''}</td><td>${it.term||''}</td><td>${it.status||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
-        tb.appendChild(tr);
-      });
-      if((data.items||[]).length===0){
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="7">No applications for selected filters.</td>';
-        tb.appendChild(tr);
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    
+    .metric-card {
+      background: rgba(20,20,34,.8);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .metric-card h3 {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .metric-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--acc);
+      margin: 0;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+    }
+    
+    .dashboard-card {
+      background: rgba(20,20,34,.8);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 24px;
+    }
+    
+    .dashboard-card.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    .dashboard-card h3 {
+      color: #fff;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+    
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      color: var(--white);
+    }
+    
+    .table th {
+      background: rgba(255,255,255,.05);
+      font-weight: 600;
+      color: var(--muted);
+    }
+    
+    .filter-section {
+      margin-bottom: 20px;
+    }
+    
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+    
+    .filter-grid .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .filter-grid label {
+      color: var(--white);
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    
+    .filter-grid select,
+    .filter-grid input {
+      padding: 8px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .filter-grid {
+        grid-template-columns: 1fr;
       }
     }
-  }
-  byId('btn-apply').addEventListener('click', loadTracker);
-  loadTracker();
-})();
-</script>
-{% endblock %}
+  </style>
+</body>
+</html>
