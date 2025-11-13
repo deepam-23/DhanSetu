@@ -75,5 +75,6 @@ def my_loans():
             "amount": (a.data_json or {}).get("amount"),
             "term": (a.data_json or {}).get("term"),
             "purpose": (a.data_json or {}).get("purpose"),
+            "prediction": a.prediction,
         })
     return jsonify({"items": out})

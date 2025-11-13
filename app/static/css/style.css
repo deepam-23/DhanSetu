@@ -48,18 +48,31 @@ body.home-bg {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 28px;
+  padding: 8px 18px;
   background: rgba(20,20,34,.8);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255,255,255,.1);
+  min-height: 48px;
+}
+
+.nav .links {
+  display: flex;
+  align-items: center;
 }
 
 .nav .brand {
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   display: flex;
   align-items: center;
   color: #fff;
+  gap: 8px;
+}
+
+.nav .brand img {
+  height: 28px;
+  width: auto;
+  display: block;
 }
 
 .nav .brand svg {
@@ -77,10 +90,19 @@ body.home-bg {
 .nav .links a {
   color: var(--white);
   text-decoration: none;
-  margin: 0 10px;
+  margin: 0 6px;
   opacity: .9;
   font-weight: 500;
   transition: opacity .2s;
+  font-size: 0.95rem;
+}
+
+.nav .links a:focus,
+.nav .links a:focus-visible,
+.nav .links a:hover {
+  outline: 2px solid rgba(124,58,237,.9);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .nav .links a:hover,
@@ -88,9 +110,21 @@ body.home-bg {
   opacity: 1;
 }
 
+/* Mobile nav toggle (hidden by default) */
+.nav-toggle {
+  display: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: transparent;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 18px;
+}
+
 .nav .links .btn {
-  padding: 8px 14px;
+  padding: 6px 12px;
   background: linear-gradient(135deg, var(--pri), var(--acc));
+  font-size: 0.95rem;
 }
 
 /* Hero Section */
@@ -409,6 +443,11 @@ body.home-bg {
     flex-wrap: wrap;
   }
 
+  .nav-toggle { display: block; }
+  .nav .links { display: none; width: 100%; padding-top: 8px; }
+  .nav .links.open { display: flex; flex-direction: column; gap: 8px; }
+  .nav .links a { margin: 4px 0; }
+
   .login-container {
     margin: 20px auto;
     padding: 30px 20px;
@@ -609,4 +648,50 @@ body.home-bg {
 .chat-wrapper *,
 .chat-navbar * {
   color: #fff !important;
+}
+
+/* Allow language dropdown to use black text */
+.chat-navbar #chat-lang,
+.chat-navbar #chat-lang option {
+  color: #000 !important;
+}
+
+/* Responsive enhancements */
+@media (max-width: 900px) {
+  .chat-container {
+    flex-direction: column;
+    height: 80vh;
+  }
+  .chat-sidebar {
+    display: none;
+  }
+  .message p {
+    max-width: 85%;
+  }
+}
+
+@media (max-width: 600px) {
+  .chat-navbar {
+    padding: 10px 14px;
+  }
+  .chat-wrapper {
+    padding: 12px;
+  }
+  .chat-messages {
+    padding: 12px;
+  }
+  .chat-input {
+    padding: 10px;
+  }
+  .chat-input .btn {
+    padding: 8px 14px;
+  }
+  .nav {
+    padding: 8px 12px;
+  }
+  .nav .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 }

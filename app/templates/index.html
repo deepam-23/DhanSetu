@@ -75,44 +75,17 @@
         <p>Real-time status updates on your loan and KYC applications with transparent processing stages.</p>
       </div>
     </div>
-    <div class="feature-card">
-      <div class="inner">
-        <h3>Banker Dashboard</h3>
-        <p>Comprehensive management tools for bankers to review applications and process requests efficiently.</p>
-      </div>
-    </div>
   </section>
 
-  
-  <!-- Login Section -->
-  <section id="login" class="container reveal">
+  <!-- Get Started CTA -->
+  <section class="container reveal">
     <div class="login-container">
-      <h2>Login to DhanSetu</h2>
-      <form id="loginForm" class="login-form">
-        <div class="form-group">
-          <label for="userType">Select Role</label>
-          <select id="userType" name="userType" required>
-            <option value="">Choose your role</option>
-            <option value="user">User</option>
-            <option value="banker">Banker</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="Enter your email" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="Enter your password" required>
-        </div>
-        
-        <button type="submit" class="btn login-btn">Login</button>
-        <p class="register-link">
-          Don't have an account? <a href="/register">Register as User</a>
-        </p>
-      </form>
+      <h2>Get Started</h2>
+      <p>Use the Account menu in the navbar to Login or Sign Up as a User.</p>
+      <div style="margin-top:12px">
+        <a href="/register" class="btn">Sign Up</a>
+        <a href="/login" class="btn" style="margin-left:8px">User Login</a>
+      </div>
     </div>
   </section>
 
@@ -139,7 +112,7 @@
       </div>
     </div>
     <div class="site-foot">
-      <p>© 2025 DhanSetu. All Rights Reserved.</p>
+      <p> 2025 DhanSetu. All Rights Reserved.</p>
       <div class="links">
         <a href="#">Terms</a>
         <a href="#">Privacy</a>
@@ -151,45 +124,5 @@
   <div class="chatbot">
     <button class="chat-toggle">💬</button>
   </div>
-<script>
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const userType = document.getElementById('userType').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      if (!userType) {
-        alert('Please select your role');
-        return;
-      }
-      
-      try {
-        const endpoint = userType === 'banker' ? '/api/auth/banker/login' : '/api/auth/login';
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ email, password })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-          if (userType === 'banker') {
-            window.location.href = '/banker-dashboard';
-          } else {
-            window.location.href = '/user-dashboard';
-          }
-        } else {
-          alert(data.error || 'Login failed');
-        }
-      } catch (error) {
-        alert('An error occurred. Please try again.');
-      }
-    });
-  </script>
 </body>
 </html>

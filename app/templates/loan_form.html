@@ -98,8 +98,25 @@
     margin-top: 1rem;
     padding: 1rem;
     border-radius: 6px;
-    background: #f8f9fa;
+    background: #e5e7eb;
     border: 1px solid #ddd;
+    color: #000 !important;
+  }
+
+  /* Force text elements inside result to black, but keep buttons readable */
+  #loan-result p, #loan-result b, #loan-result span, #loan-result div {
+    color: #000 !important;
+  }
+  #loan-result a.btn { color: #fff !important; }
+
+  /* KYC CTA section */
+  #loan-result .kyc-cta {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #d1d5db; /* gray */
+    border: 1px solid #c5c9cf;
+    border-radius: 6px;
+    display: inline-block;
   }
 
   /* --- Responsive Design --- */

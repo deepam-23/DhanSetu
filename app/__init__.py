@@ -22,6 +22,9 @@ def create_app():
     # Init extensions
     db.init_app(app)
     login_manager.init_app(app)
+    # Redirect unauthenticated users to the login page for protected views
+    login_manager.login_view = 'web.login_page'
+    login_manager.login_message_category = 'info'
     csrf.init_app(app)
     limiter.init_app(app)
 
@@ -33,19 +36,16 @@ def create_app():
     from .blueprints.auth import bp as auth_bp
     from .blueprints.loan import bp as loan_bp
     from .blueprints.kyc import bp as kyc_bp
-    from .blueprints.banker import bp as banker_bp
     from .blueprints.web import bp as web_bp
 
     # Exempt API blueprints from CSRF (using JSON and token-based/session auth)
     csrf.exempt(auth_bp)
     csrf.exempt(loan_bp)
     csrf.exempt(kyc_bp)
-    csrf.exempt(banker_bp)
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(loan_bp, url_prefix="/api/loan")
     app.register_blueprint(kyc_bp, url_prefix="/api/kyc")
-    app.register_blueprint(banker_bp, url_prefix="/api/banker")
     app.register_blueprint(web_bp)
 
     @app.get("/api")
@@ -55,7 +55,7 @@ def create_app():
             "status": "ok",
             "endpoints": [
                 "/api/auth/register", "/api/auth/login", "/api/auth/logout",
-                "/api/loan/save-draft", "/api/kyc/start", "/api/kyc/finalize", "/api/banker/kyc/<kyc_id>"
+                "/api/loan/save-draft", "/api/loan/my", "/api/kyc/start", "/api/kyc/finalize", "/api/kyc/me", "/api/kyc/me/pdf"
             ]
         })
 

@@ -12,21 +12,33 @@
       <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSNuYXnn6Xn2JB-QAvRajXUudK2ErhHlCPfKjQh1MFusWbdYm_fpJMfDwTLRW6sGFhqP8&usqp=CAU" alt="DhanSetu" />
       <span class="brand-text">Dhan<span>Setu</span></span>
     </div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
     <div class="links">
       <a href="/">Home</a>
       <a href="/loan">Loan</a>
       <a href="/kyc">KYC</a>
-      <a href="/banker">Banker</a>
       <a href="/chat" id="nav-chat-link">Chat</a>
-      {% if banker.id %}
-        <a href="/banker-dashboard">Banker Dashboard</a>
-      {% elif current_user.is_authenticated %}
+      {% if current_user.is_authenticated %}
         <a href="/user-dashboard">My Dashboard</a>
       {% endif %}
-      <a href="/login">Login</a>
-      <a href="/register" class="btn">Sign Up</a>
+      <div class="dropdown">
+        <a href="#" class="dropdown-toggle">Account ▾</a>
+        <div class="dropdown-menu">
+          <a href="/login">User Login</a>
+          <a href="/register">User Sign Up</a>
+        </div>
+      </div>
     </div>
   </nav>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container" style="margin-top:12px">
+        {% for category, message in messages %}
+          <div style="padding:10px 12px; border:1px solid rgba(255,255,255,.2); background: rgba(124,58,237,.15); color:#fff; margin-bottom:8px">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
   <main class="container">
     {% block content %}{% endblock %}
   </main>
@@ -90,6 +102,18 @@
   </div>
   {% endblock %}
   <script src="/static/js/app.js"></script>
+  <script>
+    (function(){
+      const btn = document.getElementById('nav-toggle');
+      const links = document.querySelector('.nav .links');
+      if(btn && links){
+        btn.addEventListener('click', ()=>{
+          const open = links.classList.toggle('open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
+    })();
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

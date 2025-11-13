@@ -65,11 +65,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if(emp) reasons.push(`Employment: <b>${emp}</b>`);
         if(res) reasons.push(`Residence: <b>${res}</b>`);
 
-        const msg = `Required EMI: <b>₹${emiNeeded.toLocaleString()}</b><br/>`+
+        let msg = `Required EMI: <b>₹${emiNeeded.toLocaleString()}</b><br/>`+
                     `Capacity (base): <b>₹${capacity.toLocaleString()}</b><br/>`+
                     `Capacity (adjusted): <b>₹${boostedCapacity.toLocaleString()}</b>`+
                     (reasons.length? `<br/>${reasons.join(' • ')}` : '')+
                     `<br/>Eligibility: <b>${eligible? 'Eligible' : 'Not Eligible'}</b>`;
+        if(eligible){
+          msg += `<div class="kyc-cta"><a class="btn" href="/kyc">Proceed to KYC</a></div>`;
+        }
         show(loanResult, msg, !eligible);
       });
     }

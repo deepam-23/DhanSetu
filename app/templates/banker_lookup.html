@@ -2,30 +2,65 @@
 {% block content %}
 <h1>Banker Lookup</h1>
 
-{% if session.get('banker_id') %}
-<form id="lookup-form">
-  <label>
-    <span>KYC ID</span>
-    <input type="text" id="kyc-id" placeholder="Enter KYC ID" required>
-  </label>
-  <div class="actions">
-    <button type="submit" class="btn">Lookup</button>
-  </div>
-</form>
-<div id="lookup-result"></div>
-{% else %}
-<div class="card">
-  <h3>Banker Login Required</h3>
-  <p>Please <a href="/banker-login">sign in as a banker</a> to use KYC lookup.</p>
+<div class="card" style="max-width:720px;margin:0 auto;">
+  <form id="banker-form" class="form" onsubmit="return false;">
+    <label class="label" for="kyc-id">KYC ID</label>
+    <input class="input" type="text" id="kyc-id" name="kyc_id" placeholder="Enter KYC ID (e.g., AB12C3D4E5F6)" required />
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="banker-lookup-btn">Lookup</button>
+    </div>
+  </form>
+  <div id="banker-result" class="result" hidden></div>
+  <p style="margin-top:8px;color:var(--muted);font-size:14px">Tip: You must be logged in as a banker to use this tool.</p>
+  <div id="banker-login-hint" class="alert error" style="display:none; margin-top:8px;">Please <a href="/banker-login">sign in as a banker</a> and try again.</div>
+  <div id="banker-notfound-hint" class="alert error" style="display:none; margin-top:8px;">KYC not found. Check the ID and try again.</div>
+  <div id="banker-generic-hint" class="alert error" style="display:none; margin-top:8px;">Error occurred. Please try again.</div>
+  <div style="margin-top:8px" id="banker-success" class="alert success" hidden></div>
+  <script>
+    // The global handler in app.js will handle submit. We add simple UX helpers here.
+    (function(){
+      const form = document.getElementById('banker-form');
+      const input = document.getElementById('kyc-id');
+      const resBox = document.getElementById('banker-result');
+      const hintLogin = document.getElementById('banker-login-hint');
+      const hintNF = document.getElementById('banker-notfound-hint');
+      const hintErr = document.getElementById('banker-generic-hint');
+      const okBox = document.getElementById('banker-success');
+      function clearHints(){
+        [resBox, hintLogin, hintNF, hintErr, okBox].forEach(el=>{ if(!el) return; el.hidden = true; el.style.display = el.id.includes('hint')? 'none':'none'; });
+      }
+      if(form){
+        form.addEventListener('submit', async (e)=>{
+          e.preventDefault();
+          clearHints();
+          const val = (input && input.value || '').trim();
+          if(!val){ input && input.focus(); return; }
+          // Defer to global JS if present; otherwise do a minimal fetch
+          if(typeof fetch === 'function'){
+            try{
+              const url = ('/api/banker/kyc/' + encodeURIComponent(val));
+              const r = await fetch(url, {credentials:'include'});
+              const t = await r.text();
+              let data; try{ data = JSON.parse(t); }catch{ data = { raw: t }; }
+              if(r.status === 401){ hintLogin.style.display='block'; return; }
+              if(!r.ok){
+                if(r.status === 404){ hintNF.style.display='block'; }
+                else {
+                  hintErr.textContent = 'Error: ' + ((data && data.error) ? data.error : 'Please try again.');
+                  hintErr.style.display='block';
+                }
+                return;
+              }
+              resBox.hidden = false;
+              resBox.className = 'result alert success';
+              resBox.innerHTML = `KYC: <b>${data.kyc_id||''}</b><br/>Name: ${data.name||''}<br/>Status: ${data.status||''}<br/>Checksum: ${data.pdf_checksum||''}`;
+              okBox.hidden = false; okBox.textContent = 'Lookup successful.';
+            }catch(_){ hintErr.style.display='block'; }
+          }
+        });
+      }
+    })();
+  </script>
 </div>
-{% endif %}
 {% endblock %}
-{% block scripts %}
-<script>
-  {% if not session.get('banker_id') %}
-  window.location.href = '/banker-login';
-  {% else %}
-  window.BankerUI = { lookup: "/api/banker/kyc/" };
-  {% endif %}
-</script>
-{% endblock %}
+{% block scripts %}{% endblock %}

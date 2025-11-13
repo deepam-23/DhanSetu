@@ -9,6 +9,13 @@
     <h2 class="nav-title">DhanSetu</h2>
   </div>
   <div class="nav-right">
+    <label style="display:flex;align-items:center;gap:8px;margin-right:12px;">
+      <span style="opacity:.8;font-size:14px">Language</span>
+      <select id="chat-lang" style="background:rgba(255,255,255,.1);color:#000;border:1px solid rgba(255,255,255,.2);padding:6px 8px;">
+        <option value="en" selected>English</option>
+        <option value="kn">Kannada</option>
+      </select>
+    </label>
     <a href="/" class="nav-link">Home</a>
     <a href="/about" class="nav-link">About</a>
     <a href="/support" class="nav-link">Support</a>
@@ -45,10 +52,62 @@
 
       <form id="chatbot-form" class="chat-input" autocomplete="off">
         <input id="chatbot-text" name="message" type="text" placeholder="Type your message..." required />
-        <button type="submit" class="btn">Send</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button type="submit" class="btn">Send</button>
+        </div>
       </form>
     </main>
   </div>
 </section>
+
+<script>
+  (function(){
+    const box = document.getElementById('chatbot-messages');
+    const form = document.getElementById('chatbot-form');
+    const input = document.getElementById('chatbot-text');
+    const selLang = document.getElementById('chat-lang');
+
+    function addMsg(role, text){
+      const wrap = document.createElement('div');
+      wrap.className = 'message ' + (role === 'user' ? 'user' : 'bot');
+      const p = document.createElement('p');
+      const emoji = role === 'user' ? '🧑‍💬 ' : '🤖 ';
+      p.textContent = emoji + text;
+      wrap.appendChild(p);
+      box.appendChild(wrap);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function currentLang(){ return (selLang && selLang.value) || 'en'; }
+
+    async function send(text){
+      addMsg('user', text);
+      try{
+        const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: text, lang: currentLang()})});
+        const data = await r.json();
+        const reply = data.reply || 'Sorry, I could not process that.';
+        addMsg('bot', reply);
+      }catch{
+        addMsg('bot', 'Network error. Please try again.');
+      }
+    }
+
+    if(form){
+      form.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const text = (input.value || '').trim();
+        if(!text) return;
+        input.value = '';
+        send(text);
+      });
+    }
+
+    // Auto greet
+    if(box && box.getAttribute('data-init') === 'greet'){
+      const greet = currentLang() === 'kn' ? 'ನಮಸ್ಕಾರ! ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?' : 'Hello! How can I help you today?';
+      addMsg('bot', greet);
+    }
+  })();
+</script>
 
 {% endblock %}

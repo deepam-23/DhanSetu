@@ -1,0 +1,6 @@
+user_id,email,name,loan_id,amount,term,prediction,kyc_id,kyc_status,pdf_url,created_at
+1,arun@example.com,Arun Kumar,101,250000,36,eligible,KYCAB12CD34,verified,/api/banker/kyc/KYCAB12CD34/pdf,2025-11-12T10:10:00Z
+2,meera@example.com,Meera Shah,102,150000,24,ineligible,KYCEF56GH78,pending,,2025-11-12T10:12:00Z
+3,rahul@example.com,Rahul Verma,103,500000,48,eligible,KYCIJ90KL12,verified,/api/banker/kyc/KYCIJ90KL12/pdf,2025-11-12T10:14:00Z
+4,priya@example.com,Priya Nair,104,80000,12,ineligible,KYCMN34OP56,pending,,2025-11-12T10:16:00Z
+5,sneha@example.com,Sneha Iyer,105,300000,36,eligible,KYCQR78ST90,verified,/api/banker/kyc/KYCQR78ST90/pdf,2025-11-12T10:18:00Z

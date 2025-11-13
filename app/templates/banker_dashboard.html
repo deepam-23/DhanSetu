@@ -16,7 +16,6 @@
     </div>
     <div class="links">
       <a href="/banker-dashboard" class="active">Dashboard</a>
-      <a href="/banker">KYC Lookup</a>
       <a href="/chat">Chat</a>
       <button id="btn-logout" class="btn">Logout</button>
     </div>
@@ -63,13 +62,13 @@
         </div>
       </div>
 
-      <!-- Eligible Candidates -->
+      <!-- Eligible + Verified KYC with PDF -->
       <div class="dashboard-card">
-        <h3>Eligible Candidates</h3>
+        <h3>Eligible & Verified KYC</h3>
         <div class="table-container">
           <table class="table" id="tbl-eligible">
             <thead>
-              <tr><th>ID</th><th>Name</th><th>Email</th><th>Amount</th><th>Term</th><th>Created</th></tr>
+              <tr><th>KYC ID</th><th>Name</th><th>Email</th><th>Loan ID</th><th>Created</th><th>Actions</th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -197,23 +196,30 @@
         }
       }catch{}
 
-      // Eligible candidates
+      // Eligible + Verified KYC with PDF
       try{
-        const r = await fetch('/api/banker/applications', {credentials:'include'});
+        const r = await fetch('/api/banker/eligible-kyc', {credentials:'include'});
         const data = await r.json();
         if(r.ok){
           const tb = document.querySelector('#tbl-eligible tbody');
           tb.innerHTML = '';
-          (data.items||[]).filter(it=> (it.prediction||'').toLowerCase()==='eligible').slice(0,20).forEach(it=>{
+          (data.items||[]).forEach(it=>{
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${it.id}</td><td>${it.full_name||''}</td><td>${it.email||''}</td><td>${it.amount||''}</td><td>${it.term||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td>`;
+            tr.innerHTML = `<td>${it.kyc_id}</td><td>${it.name||''}</td><td>${it.email||''}</td><td>${it.loan_id||''}</td><td>${(it.created_at||'').replace('T',' ').replace('Z','')}</td><td><a class="btn" href="${it.pdf_url}" target="_blank">Download PDF</a></td>`;
             tb.appendChild(tr);
           });
           if(tb.children.length===0){
             const tr = document.createElement('tr');
-            tr.innerHTML = '<td colspan="6">No eligible candidates yet.</td>';
+            tr.innerHTML = '<td colspan="6">No eligible verified KYC found.</td>';
             tb.appendChild(tr);
           }
+        } else {
+          const tb = document.querySelector('#tbl-eligible tbody');
+          tb.innerHTML = '';
+          const tr = document.createElement('tr');
+          const msg = r.status===401 ? 'Please log in as banker to view eligible KYC.' : (data && data.error ? data.error : 'Failed to load eligible KYC');
+          tr.innerHTML = `<td colspan="6">${msg}</td>`;
+          tb.appendChild(tr);
         }
       }catch{}
 

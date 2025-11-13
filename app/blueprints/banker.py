@@ -37,14 +37,19 @@ def lookup(kyc_id: str):
         kyc = None
         # If the input looks like a numeric internal ID, resolve it first
         if norm_id.isdigit():
-            kyc = db.session.execute(db.select(KycRecord).filter_by(id=int(norm_id))).scalar_one_or_none()
+            # Primary key lookup is unique; use session.get for safety
+            kyc = db.session.get(KycRecord, int(norm_id))
             if kyc and kyc.kyc_id:
                 norm_id = kyc.kyc_id
         if kyc is None:
-            kyc = db.session.execute(db.select(KycRecord).filter_by(kyc_id=norm_id)).scalar_one_or_none()
+            # Be robust against accidental duplicates: pick the most recent
+            query = db.select(KycRecord).filter_by(kyc_id=norm_id).order_by(KycRecord.created_at.desc())
+            kyc = db.session.execute(query).scalars().first()
         if not kyc:
             return jsonify({"error": "KYC not found"}), 404
-        pdf = db.session.execute(db.select(KycPdf).filter_by(kyc_id=norm_id)).scalar_one_or_none()
+        pdf = db.session.execute(
+            db.select(KycPdf).filter_by(kyc_id=norm_id).order_by(KycPdf.id.desc())
+        ).scalars().first()
         if not pdf:
             return jsonify({"error": "KYC PDF not found"}), 404
 
@@ -62,6 +67,34 @@ def lookup(kyc_id: str):
     except Exception as e:
         return jsonify({"error": f"Lookup failed: {str(e) or 'unknown'}"}), 400
 
+@bp.get("/kyc/<string:kyc_id>/pdf")
+@limiter.limit("30/minute")
+def download_pdf(kyc_id: str):
+    # Normalize and resolve
+    raw = (kyc_id or "").strip()
+    norm_id = raw.replace(" ", "").replace("-", "").upper()
+    if not norm_id:
+        return jsonify({"error": "Invalid KYC ID"}), 400
+    kyc = None
+    if norm_id.isdigit():
+        kyc = db.session.get(KycRecord, int(norm_id))
+        if kyc and kyc.kyc_id:
+            norm_id = kyc.kyc_id
+    if kyc is None:
+        kyc = db.session.execute(
+            db.select(KycRecord).filter_by(kyc_id=norm_id).order_by(KycRecord.created_at.desc())
+        ).scalars().first()
+    if not kyc:
+        return jsonify({"error": "KYC not found"}), 404
+    pdf = db.session.execute(
+        db.select(KycPdf).filter_by(kyc_id=norm_id).order_by(KycPdf.id.desc())
+    ).scalars().first()
+    if not pdf or not pdf.pdf_url:
+        return jsonify({"error": "KYC PDF not found"}), 404
+    try:
+        return send_file(pdf.pdf_url, as_attachment=True, download_name=f"{norm_id}.pdf")
+    except Exception as e:
+        return jsonify({"error": f"Failed to send PDF: {str(e) or 'unknown'}"}), 400
 
 # ----- Analytics for banker dashboard -----
 
@@ -97,6 +130,41 @@ def analytics_recent_kyc():
             "created_at": r.created_at.isoformat() + "Z" if r.created_at else "",
         })
     return jsonify({"items": items})
+
+
+@bp.get("/eligible-kyc")
+@limiter.limit("30/minute")
+def eligible_kyc_list():
+    # Users with prediction == 'eligible' and KYC status verified, with latest KYC PDF
+    # Strategy: get recent verified KYC, check eligible loan for same user, attach latest KycPdf
+    rows = db.session.execute(
+        db.select(KycRecord).where(KycRecord.status == "verified").order_by(KycRecord.created_at.desc()).limit(200)
+    ).scalars().all()
+    out = []
+    for k in rows:
+        # latest eligible loan for this user
+        la = db.session.execute(
+            db.select(LoanApplication).where(LoanApplication.user_id == k.user_id, LoanApplication.prediction == 'eligible').order_by(LoanApplication.created_at.desc())
+        ).scalars().first()
+        if not la:
+            continue
+        pdf = db.session.execute(
+            db.select(KycPdf).filter_by(kyc_id=k.kyc_id).order_by(KycPdf.id.desc())
+        ).scalars().first()
+        if not pdf:
+            continue
+        u = db.session.get(User, k.user_id)
+        out.append({
+            "kyc_id": k.kyc_id,
+            "name": k.name,
+            "email": (u.email if u else ""),
+            "status": k.status,
+            "pdf_url": f"/api/banker/kyc/{k.kyc_id}/pdf",
+            "loan_id": la.id,
+            "loan_prediction": la.prediction,
+            "created_at": k.created_at.isoformat() + "Z" if k.created_at else "",
+        })
+    return jsonify({"items": out})
 
 
 @bp.get("/analytics/recent-loans")
@@ -145,15 +213,6 @@ def applications():
             "prediction": a.prediction,
         })
     return jsonify({"items": items})
-
-
-@bp.get("/kyc/<string:kyc_id>/pdf")
-@limiter.limit("10/minute")
-def download_pdf(kyc_id: str):
-    pdf = db.session.execute(db.select(KycPdf).filter_by(kyc_id=kyc_id)).scalar_one_or_none()
-    if not pdf:
-        return jsonify({"error": "KYC PDF not found"}), 404
-    return send_file(pdf.pdf_url, mimetype="application/pdf")
 
 
 @bp.post("/verify")

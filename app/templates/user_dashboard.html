@@ -72,6 +72,27 @@
 
   <script>
     (async function() {
+      // Helper to render latest eligibility summary
+      function renderEligibilitySummary(items){
+        if(!Array.isArray(items) || items.length===0) return '';
+        const latest = items[0];
+        const pred = (latest.prediction||'').toLowerCase();
+        const predColor = pred==='eligible' ? '#34d399' : pred==='ineligible' ? '#f87171' : '#fbbf24';
+        const note = pred==='eligible'
+          ? 'Great! Proceed to KYC to continue.'
+          : 'You can try improving inputs (income, lower EMIs, better credit) and check again.';
+        return `
+          <div class="dashboard-card" style="margin-bottom:16px">
+            <h3>Latest Eligibility</h3>
+            <p>Application #${latest.id} • Status: <strong>${latest.status}</strong> • Prediction: <strong style="color:${predColor}">${latest.prediction||'-'}</strong></p>
+            <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap">
+              <span style="color: var(--muted)">${note}</span>
+              <a href="/loan" class="btn">Try Again / Improve</a>
+              ${pred==='eligible' ? '<a href="/kyc" class="btn secondary">Proceed to KYC</a>' : ''}
+            </div>
+          </div>`;
+      }
+
       // Load KYC Status
       try {
         const response = await fetch('/api/kyc/me', { credentials: 'include' });
@@ -98,22 +119,27 @@
         document.getElementById('kyc-status').innerHTML = '<p style="color: #f87171;">Unable to load KYC</p>';
       }
 
-      // Load Loan Applications
+      // Load Loan Applications (with prediction)
       try {
         const response = await fetch('/api/loan/my', { credentials: 'include' });
         const data = await response.json();
         const loanBox = document.getElementById('loan-applications');
         
         if (response.ok && data.items && data.items.length > 0) {
-          let html = '<div class="loan-list">';
+          let html = '';
+          html += renderEligibilitySummary(data.items);
+          html += '<div class="loan-list">';
           data.items.forEach(loan => {
             const statusColor = loan.status === 'approved' ? '#34d399' : loan.status === 'pending' ? '#fbbf24' : '#f87171';
+            const pred = (loan.prediction||'').toLowerCase();
+            const predColor = pred==='eligible' ? '#34d399' : pred==='ineligible' ? '#f87171' : '#fbbf24';
             html += `
               <div class="loan-item">
                 <p><strong>Application #${loan.id}</strong></p>
                 <p>Amount: ₹${loan.amount || 'N/A'}</p>
                 <p>Term: ${loan.term || 'N/A'} months</p>
                 <p>Status: <span style="color: ${statusColor}">${loan.status || 'N/A'}</span></p>
+                <p>Eligibility: <span style="color:${predColor}">${loan.prediction || 'N/A'}</span></p>
                 <p>Created: ${new Date(loan.created_at).toLocaleDateString()}</p>
               </div>
             `;

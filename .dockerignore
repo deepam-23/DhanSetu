@@ -1,0 +1,32 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Venvs
+.venv/
+venv/
+
+# Git
+.git/
+.gitignore
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+
+# Env files
+.env
+.env.*
+
+# Node (if any)
+node_modules/
+
+# Bytecode and build
+build/
+dist/
+.eggs/
+*.egg-info/

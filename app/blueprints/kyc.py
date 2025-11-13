@@ -60,11 +60,7 @@ def finalize():
     if not kyc:
         return jsonify({"error": "KYC not started"}), 400
 
-    # Require OTP verifications
-    if not session.get("otp_email_verified"):
-        return jsonify({"error": "Please verify your email via OTP before finalizing."}), 400
-    if not session.get("otp_phone_verified"):
-        return jsonify({"error": "Please verify your phone via OTP before finalizing."}), 400
+    # OTP verification disabled per request; proceed without OTP checks
 
     kyc.kyc_id = generate_kyc_id(name, dob_iso, gov_id)
     kyc.name = name

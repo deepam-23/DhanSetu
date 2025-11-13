@@ -110,6 +110,7 @@
 </style>
 
 <div class="card">
+  <div id="eligibility-banner" class="alert" style="display:none; margin-bottom:12px"></div>
   <div class="actions">
     <button id="kyc-start" class="btn">Start KYC</button>
   </div>
@@ -129,27 +130,11 @@
     <div class="grid">
       <label>
         <span>Email</span>
-        <div style="display:flex; gap:8px; align-items:center">
-          <input type="email" name="email" id="kyc-email" />
-          <button type="button" class="btn secondary" id="otp-email-send">Send OTP</button>
-        </div>
-        <div style="display:flex; gap:8px; margin-top:8px; align-items:center">
-          <input type="text" id="otp-email-code" placeholder="Enter email OTP" />
-          <button type="button" class="btn secondary" id="otp-email-verify">Verify</button>
-        </div>
-        <small id="otp-email-status"></small>
+        <input type="email" name="email" id="kyc-email" />
       </label>
       <label>
         <span>Phone</span>
-        <div style="display:flex; gap:8px; align-items:center">
-          <input type="tel" name="phone" id="kyc-phone" />
-          <button type="button" class="btn secondary" id="otp-phone-send">Send OTP</button>
-        </div>
-        <div style="display:flex; gap:8px; margin-top:8px; align-items:center">
-          <input type="text" id="otp-phone-code" placeholder="Enter phone OTP" />
-          <button type="button" class="btn secondary" id="otp-phone-verify">Verify</button>
-        </div>
-        <small id="otp-phone-status"></small>
+        <input type="tel" name="phone" id="kyc-phone" />
       </label>
     </div>
 
@@ -228,15 +213,9 @@
     finalize: "/api/kyc/finalize", 
     myPdf: "/api/kyc/me/pdf" 
   };
-  document.addEventListener('DOMContentLoaded', ()=>{
+  document.addEventListener('DOMContentLoaded', async ()=>{
     const emailInput = document.getElementById('kyc-email');
     const phoneInput = document.getElementById('kyc-phone');
-    const emailSend = document.getElementById('otp-email-send');
-    const emailVerify = document.getElementById('otp-email-verify');
-    const phoneSend = document.getElementById('otp-phone-send');
-    const phoneVerify = document.getElementById('otp-phone-verify');
-    const emailStatus = document.getElementById('otp-email-status');
-    const phoneStatus = document.getElementById('otp-phone-status');
 
     // --- Selfie capture ---
     const selfiePanel = document.createElement('div');
@@ -244,7 +223,7 @@
     selfiePanel.style.maxWidth = '900px';
     selfiePanel.style.margin = '16px auto';
     selfiePanel.innerHTML = `
-      <h3>Capture Selfie (optional but recommended)</h3>
+      <h3 style="color:#000">Capture Selfie (optional but recommended)</h3>
       <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
         <video id="selfie-video" autoplay playsinline style="width:320px; height:240px; background:#000; border-radius:6px"></video>
         <canvas id="selfie-canvas" width="320" height="240" style="display:none"></canvas>
@@ -290,38 +269,29 @@
       }catch(err){ st.textContent = 'Upload error'; }
     }); }
 
-    async function sendOTP(channel, value){
-      const r = await postJSON('/api/kyc/otp/send', {channel, value});
-      return r;
-    }
-    async function verifyOTP(channel, value, code){
-      const r = await postJSON('/api/kyc/otp/verify', {channel, value, code});
-      return r;
-    }
-    if(emailSend){ emailSend.addEventListener('click', async ()=>{
-      const value = (emailInput&&emailInput.value||'').trim();
-      if(!value){ emailStatus.textContent='Enter email'; return; }
-      const r = await sendOTP('email', value);
-      emailStatus.textContent = r.ok? ('OTP sent to email' + (r.data && r.data.debug ? ' (code: '+r.data.debug+')' : '')) : (r.data.error||'Failed');
-    }); }
-    if(emailVerify){ emailVerify.addEventListener('click', async ()=>{
-      const value = (emailInput&&emailInput.value||'').trim();
-      const code = (document.getElementById('otp-email-code').value||'').trim();
-      const r = await verifyOTP('email', value, code);
-      emailStatus.textContent = r.ok? 'Email verified' : (r.data.error||'Failed');
-    }); }
-    if(phoneSend){ phoneSend.addEventListener('click', async ()=>{
-      const value = (phoneInput&&phoneInput.value||'').trim();
-      if(!value){ phoneStatus.textContent='Enter phone'; return; }
-      const r = await sendOTP('phone', value);
-      phoneStatus.textContent = r.ok? ('OTP sent to phone' + (r.data && r.data.debug ? ' (code: '+r.data.debug+')' : '')) : (r.data.error||'Failed');
-    }); }
-    if(phoneVerify){ phoneVerify.addEventListener('click', async ()=>{
-      const value = (phoneInput&&phoneInput.value||'').trim();
-      const code = (document.getElementById('otp-phone-code').value||'').trim();
-      const r = await verifyOTP('phone', value, code);
-      phoneStatus.textContent = r.ok? 'Phone verified' : (r.data.error||'Failed');
-    }); }
+    // --- Eligibility banner ---
+    try{
+      const r = await fetch('/api/loan/my', {credentials:'include'});
+      if(r.ok){
+        const data = await r.json();
+        const items = data.items || [];
+        if(items.length){
+          const latest = items[0];
+          const box = document.getElementById('eligibility-banner');
+          if(box){
+            if((latest.status||'').toLowerCase()==='draft' && (latest.prediction||'').toLowerCase()==='eligible'){
+              box.className = 'alert success';
+              box.textContent = 'You are eligible for a loan. Please complete your KYC to proceed.';
+              box.style.display = 'block';
+            } else if((latest.prediction||'').toLowerCase()==='ineligible'){
+              box.className = 'alert error';
+              box.textContent = 'You are currently not eligible based on the latest information.';
+              box.style.display = 'block';
+            }
+          }
+        }
+      }
+    }catch{}
   });
 </script>
 {% endblock %}
