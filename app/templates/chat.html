@@ -1,113 +1,520 @@
 {% extends 'base.html' %}
 {% block chat_widget %}{% endblock %}
 {% block content %}
+<style>
+  /* Hide the main navigation in chat to prevent duplicate elements */
+  .nav { display: none; }
+  .container { margin-top: 0; padding: 0; max-width: 100%; }
+  body { background: #f3f4f6; }
+</style>
 
-<!-- Navbar -->
-<nav class="chat-navbar">
-  <div class="nav-left">
-    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="DhanSetu Bot" class="nav-logo">
-    <h2 class="nav-title">DhanSetu</h2>
-  </div>
-  <div class="nav-right">
-    <label style="display:flex;align-items:center;gap:8px;margin-right:12px;">
-      <span style="opacity:.8;font-size:14px">Language</span>
-      <select id="chat-lang" style="background:rgba(255,255,255,.1);color:#000;border:1px solid rgba(255,255,255,.2);padding:6px 8px;">
-        <option value="en" selected>English</option>
-        <option value="kn">Kannada</option>
-      </select>
-    </label>
-    <a href="/" class="nav-link">Home</a>
-    <a href="/about" class="nav-link">About</a>
-    <a href="/support" class="nav-link">Support</a>
-  </div>
-</nav>
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --bg-dark: #f9fafb;
+    --bg-darker: #ffffff;
+    --text-dark: #111827;
+    --text-light: #4b5563;
+    --border-color: #e5e7eb;
+    --bot-bubble: #f3f4f6;
+    --bot-text: #111827;
+    --user-bubble: #4f46e5;
+    --user-text: #ffffff;
+    --typing-animation: typing 1.5s infinite;
+  }
 
-<!-- Chat Section -->
-<section class="chat-wrapper">
+  @keyframes typing {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 800px;
+    height: 90vh;
+    max-height: 1000px;
+    background: var(--bg-darker);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+  }
+
+  .chat-header {
+    padding: 18px 24px;
+    background: white;
+    color: var(--text-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .chat-header-title {
+    flex: 1;
+    text-align: center;
+  }
+
+  .chat-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .chat-header p {
+    margin: 4px 0 0;
+    font-size: 0.8rem;
+    opacity: 0.9;
+    font-weight: 400;
+  }
+
+  .language-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .language-selector label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  .language-selector select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .language-selector select:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+  }
+
+  .language-selector select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+  }
+
+  #chatbot-messages {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background: var(--bg-darker);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+  }
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+    animation: messageAppear 0.3s ease-out;
+  }
+
+  @keyframes messageAppear {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message-user {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+
+  .message-bot {
+    align-self: flex-start;
+    align-items: flex-start;
+  }
+
+  .message-content {
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: relative;
+    transition: all 0.2s ease;
+    max-width: 90%;
+  }
+
+  .message-user .message-content {
+    background: var(--user-bubble);
+    color: var(--user-text);
+    border-bottom-right-radius: 4px;
+    margin-left: auto;
+  }
+
+  .message-bot .message-content {
+    background: var(--bot-bubble);
+    color: var(--bot-text);
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 4px;
+    margin-right: auto;
+  }
+
+  .message-time {
+    font-size: 0.7rem;
+    color: var(--text-lighter);
+    margin-top: 4px;
+    padding: 0 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .message:hover .message-time {
+    opacity: 1;
+  }
+
+  .typing-indicator {
+    display: flex;
+    gap: 8px;
+    padding: 14px 24px;
+    background: var(--bot-bubble);
+    border-radius: 12px;
+    width: fit-content;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+  }
+
+  .typing-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--text-light);
+    border-radius: 50%;
+    opacity: 0.6;
+  }
+
+  .typing-dot:nth-child(1) { animation: var(--typing-animation) 0.75s -0.2s infinite; }
+  .typing-dot:nth-child(2) { animation: var(--typing-animation) 0.75s -0.1s infinite; }
+  .typing-dot:nth-child(3) { animation: var(--typing-animation) 0.75s infinite; }
+
+  .chat-input-container {
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.9);
+    border-top: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+    position: relative;
+  }
+
+  #chatbot-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  #chatbot-text {
+    flex: 1;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    resize: none;
+    min-height: 60px;
+    max-height: 200px;
+    line-height: 1.5;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  #chatbot-text:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  #chatbot-form button {
+    padding: 0 24px;
+    height: 60px;
+    border-radius: 12px;
+    background: var(--user-bubble);
+    color: white;
+    border: none;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+  }
+
+  #chatbot-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
+
+  #chatbot-form button:active {
+    transform: translateY(0);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .chat-container {
+      height: 100vh;
+      border-radius: 0;
+    }
+    
+    .message {
+      max-width: 90%;
+    }
+    
+    #chatbot-form {
+      padding: 12px;
+    }
+    
+    #chatbot-text {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<div class="chat-wrapper" style="display: flex; justify-content: center; align-items: center; padding: 20px; min-height: 100vh; background: #f3f4f6;">
   <div class="chat-container">
-    <!-- Sidebar -->
-    <aside class="chat-sidebar">
-      <div class="sidebar-header">
-        <h3>Chats</h3>
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <div class="chat-header-title">
+        <h4>Chat with DhanSetu</h4>
+        <p>Ask me anything about our services</p>
       </div>
-      <div class="chat-list">
-        <div class="chat-user active">
-          <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot">
-          <span>DhanSetu Bot</span>
-        </div>
+      <div class="language-selector">
+        <label for="chat-lang">Language:</label>
+        <select id="chat-lang">
+          <option value="en">English</option>
+          <option value="kn">Kannada</option>
+        </select>
       </div>
-    </aside>
+    </div>
 
-    <!-- Main Chat Area -->
-    <main class="chat-main">
-      <div class="chat-header">
-        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot">
-        <div>
-          <h4>DhanSetu Bot</h4>
-          <p>Online</p>
-        </div>
-      </div>
+    <!-- Messages Container -->
+    <div id="chatbot-messages" data-init="greet"></div>
 
-      <div id="chatbot-messages" class="chat-messages" data-init="greet"></div>
-
-      <form id="chatbot-form" class="chat-input" autocomplete="off">
-        <input id="chatbot-text" name="message" type="text" placeholder="Type your message..." required />
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button type="submit" class="btn">Send</button>
-        </div>
+    <!-- Input Area -->
+    <div class="chat-input-container">
+      <form id="chatbot-form" autocomplete="off">
+        <input id="chatbot-text" name="message" type="text" placeholder="Type your message..." required>
+        <button type="submit" id="send-button">Send</button>
       </form>
-    </main>
+    </div>
   </div>
-</section>
+</div>
 
 <script>
-  (function(){
-    const box = document.getElementById('chatbot-messages');
-    const form = document.getElementById('chatbot-form');
-    const input = document.getElementById('chatbot-text');
-    const selLang = document.getElementById('chat-lang');
+(function(){
+  const box = document.getElementById('chatbot-messages');
+  const form = document.getElementById('chatbot-form');
+  const input = document.getElementById('chatbot-text');
+  const sendButton = document.getElementById('send-button');
+  let isTyping = false;
 
-    function addMsg(role, text){
-      const wrap = document.createElement('div');
-      wrap.className = 'message ' + (role === 'user' ? 'user' : 'bot');
-      const p = document.createElement('p');
-      const emoji = role === 'user' ? '🧑‍💬 ' : '🤖 ';
-      p.textContent = emoji + text;
-      wrap.appendChild(p);
-      box.appendChild(wrap);
-      box.scrollTop = box.scrollHeight;
+  // Format time as HH:MM
+  function getCurrentTime() {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Show typing indicator
+  function showTypingIndicator() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message message-bot';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = `
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
+    box.appendChild(typingDiv);
+    box.scrollTop = box.scrollHeight;
+    return typingDiv;
+  }
+
+  // Hide typing indicator
+  function hideTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    if (indicator) {
+      indicator.remove();
     }
+  }
 
-    function currentLang(){ return (selLang && selLang.value) || 'en'; }
+  // Add a new message to the chat
+  function addMessage(role, text) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message message-${role}`;
+    
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.textContent = text;
+    
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'message-time';
+    timeSpan.textContent = getCurrentTime();
+    
+    messageDiv.appendChild(messageContent);
+    messageDiv.appendChild(timeSpan);
+    
+    // Remove typing indicator if it exists
+    hideTypingIndicator();
+    
+    box.appendChild(messageDiv);
+    box.scrollTop = box.scrollHeight;
+    
+    // Add animation class
+    setTimeout(() => {
+      messageContent.style.transform = 'translateY(0)';
+    }, 10);
+    
+    return messageDiv;
+  }
 
-    async function send(text){
-      addMsg('user', text);
-      try{
-        const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: text, lang: currentLang()})});
-        const data = await r.json();
-        const reply = data.reply || 'Sorry, I could not process that.';
-        addMsg('bot', reply);
-      }catch{
-        addMsg('bot', 'Network error. Please try again.');
-      }
-    }
+  // Simulate typing effect
+  async function simulateTyping(text, callback) {
+    isTyping = true;
+    sendButton.disabled = true;
+    
+    const typingIndicator = showTypingIndicator();
+    
+    // Simulate typing delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+    
+    hideTypingIndicator();
+    
+    // Add the message
+    callback(text);
+    
+    isTyping = false;
+    sendButton.disabled = false;
+  }
 
-    if(form){
-      form.addEventListener('submit', (e)=>{
-        e.preventDefault();
-        const text = (input.value || '').trim();
-        if(!text) return;
-        input.value = '';
-        send(text);
+  // Send message to server
+  async function sendMessage(text) {
+    if (!text.trim()) return;
+    
+    // Add user message immediately
+    addMessage('user', text);
+    
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: text, 
+          lang: document.getElementById('chat-lang')?.value || 'en' 
+        })
       });
+      
+      const data = await response.json();
+      
+      // Simulate typing for bot response
+      await simulateTyping(data.reply || 'Sorry, I could not process that.', (responseText) => {
+        addMessage('bot', responseText);
+      });
+      
+    } catch (error) {
+      console.error('Error:', error);
+      addMessage('bot', 'Sorry, there was an error processing your request. Please try again.');
     }
+  }
 
-    // Auto greet
-    if(box && box.getAttribute('data-init') === 'greet'){
-      const greet = currentLang() === 'kn' ? 'ನಮಸ್ಕಾರ! ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?' : 'Hello! How can I help you today?';
-      addMsg('bot', greet);
-    }
-  })();
+  // Form submission
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text || isTyping) return;
+      
+      input.value = '';
+      await sendMessage(text);
+    });
+  }
+  
+  // Auto-resize textarea
+  if (input) {
+    input.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
+    });
+    
+    // Send message on Shift+Enter (new line) or just Enter (send)
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+  }
+
+  // Initial greeting
+  if (box && box.getAttribute('data-init') === 'greet') {
+    const lang = document.getElementById('chat-lang')?.value || 'en';
+    const greeting = lang === 'kn' 
+      ? 'ನಮಸ್ಕಾರ! ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?' 
+      : 'Hello! I\'m here to help. What would you like to know?';
+    
+    // Show greeting after a short delay
+    setTimeout(() => {
+      addMessage('bot', greeting);
+    }, 500);
+  }
+
+  // Handle language change
+  const langSelector = document.getElementById('chat-lang');
+  if (langSelector) {
+    langSelector.addEventListener('change', function() {
+      // Clear existing messages
+      box.innerHTML = '';
+      
+      // Show new greeting in selected language
+      const lang = this.value;
+      const greeting = lang === 'kn' 
+        ? 'ನಮಸ್ಕಾರ! ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?' 
+        : 'Hello! I\'m here to help. What would you like to know?';
+      
+      setTimeout(() => {
+        addMessage('bot', greeting);
+      }, 300);
+    });
+  }
+})();
 </script>
 
 {% endblock %}

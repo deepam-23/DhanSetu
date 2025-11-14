@@ -4,12 +4,270 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DhanSetu - Your Financial Partner</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* General */
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #0d0f1a;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* Navbar */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #151729;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #5c63ff;
+    }
+
+    .brand span {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .links a {
+      color: #ddd;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .links a.active,
+    .links a:hover {
+      color: #5c63ff;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 5rem 2rem;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #fff;
+    }
+
+    .hero-sub {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      color: #bbb;
+    }
+
+    .cta {
+      margin-top: 2rem;
+    }
+
+    .btn {
+      background: #5c63ff;
+      color: white;
+      padding: 0.8rem 1.6rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      transition: background 0.3s;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background: #4349ff;
+    }
+
+    /* Stats */
+    .stats {
+      margin-top: 3rem;
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .stats div {
+      text-align: center;
+    }
+
+    .stats strong {
+      display: block;
+      font-size: 1.6rem;
+      color: #5c63ff;
+    }
+
+    /* Features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      padding: 4rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: #1a1c2e;
+      border-radius: 14px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+
+    .feature-card h3 {
+      color: #5c63ff;
+      font-size: 1.3rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .feature-card p {
+      color: #ccc;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* Get Started */
+    .get-started {
+      text-align: center;
+      background: #1a1c2e;
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      max-width: 700px;
+      margin: 3rem auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .get-started h2 {
+      color: #5c63ff;
+      margin-bottom: 1rem;
+    }
+
+    /* Footer */
+    .footer-columns {
+      background: #0b0c14;
+      padding: 3rem 2rem;
+      color: #aaa;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .footer-grid h4 {
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .footer-grid ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-grid li {
+      margin: 0.5rem 0;
+    }
+
+    .footer-grid a {
+      color: #aaa;
+    }
+
+    .footer-grid a:hover {
+      color: #5c63ff;
+    }
+
+    .site-foot {
+      margin-top: 2rem;
+      border-top: 1px solid #222;
+      padding-top: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin-inline: auto;
+      color: #777;
+      font-size: 0.9rem;
+    }
+
+    .site-foot a {
+      color: #5c63ff;
+      margin-left: 1rem;
+    }
+
+    /* Chatbot */
+    .chatbot {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+    }
+
+    .chat-toggle {
+      background: #5c63ff;
+      color: white;
+      border: none;
+      padding: 1rem 1.2rem;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+
+    .chat-toggle:hover {
+      background: #4349ff;
+    }
+
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 1.7rem;
+      }
+
+      .stats {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .site-foot {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
 </head>
 
-<body class="home-bg">
-  <!-- Navigation -->
+<body>
+  <!-- Navbar -->
   <nav class="nav">
     <div class="brand">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-right: 8px;">
@@ -22,70 +280,69 @@
     <div class="links">
       <a href="/" class="active">Home</a>
       <a href="/register">Register</a>
-      <a href="/login">Login</a>
+      <a href="/login">User Login</a>
+      <a href="/banker-login">Banker Login</a>
       <a href="/chat">Chat</a>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="hero container reveal">
-    <div class="hero-content">
-      <h1 class="hero-title">Your Digital Financial Partner. Smart Loans & KYC Solutions for Modern India.</h1>
-      <p class="hero-sub">
-        Apply for loans, complete KYC verification, and manage your financial journey all in one secure platform. 
-        Built for individuals and businesses with AI-powered insights and instant processing.
-      </p>
-      <div class="cta">
-        <a href="#login" class="btn">Get Started</a>
+  <!-- Hero -->
+  <section class="hero">
+    <h1 class="hero-title">
+      Your Digital Financial Partner. Smart Loans & KYC Solutions for Modern India.
+    </h1>
+    <p class="hero-sub">
+      Apply for loans, complete KYC verification, and manage your financial journey all in one secure platform.
+      Built for individuals and businesses with AI-powered insights and instant processing.
+    </p>
+    <div class="cta">
+      <a href="/login" class="btn">Get Started</a>
+    </div>
+
+    <div class="stats">
+      <div>
+        <strong>10k+</strong>
+        <span>Active Users</span>
       </div>
-      <div class="stats">
-        <div>
-          <strong>10k+</strong>
-          <span>Active Users</span>
-        </div>
-        <div>
-          <strong>₹50 Cr+</strong>
-          <span>Tracked Transactions</span>
-        </div>
-        <div>
-          <strong>100%</strong>
-          <span>Data Privacy</span>
-        </div>
+      <div>
+        <strong>₹50 Cr+</strong>
+        <span>Tracked Transactions</span>
+      </div>
+      <div>
+        <strong>100%</strong>
+        <span>Data Privacy</span>
       </div>
     </div>
   </section>
 
-  <!-- Feature Highlights -->
-  <section class="container features grid reveal">
+  <!-- Features -->
+  <section class="features">
     <div class="feature-card">
-      <div class="inner">
-        <h3>Instant Loan Approval</h3>
-        <p>Quick loan processing with AI-powered eligibility checks and fast disbursal for your financial needs.</p>
-      </div>
+      <h3>Instant Loan Approval</h3>
+      <p>Quick loan processing with AI-powered eligibility checks and fast disbursal for your financial needs.</p>
     </div>
     <div class="feature-card">
-      <div class="inner">
-        <h3>Digital KYC Verification</h3>
-        <p>Complete paperless KYC with secure document upload and instant verification for faster processing.</p>
-      </div>
+      <h3>Digital KYC Verification</h3>
+      <p>Complete paperless KYC with secure document upload and instant verification for faster processing.</p>
     </div>
     <div class="feature-card">
-      <div class="inner">
-        <h3>Application Tracking</h3>
-        <p>Real-time status updates on your loan and KYC applications with transparent processing stages.</p>
-      </div>
+      <h3>Application Tracking</h3>
+      <p>Real-time status updates on your loan and KYC applications with transparent processing stages.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Banker Dashboard</h3>
+      <p>Comprehensive management tools for bankers to review applications and process requests efficiently.</p>
     </div>
   </section>
 
-  <!-- Get Started CTA -->
-  <section class="container reveal">
-    <div class="login-container">
-      <h2>Get Started</h2>
-      <p>Use the Account menu in the navbar to Login or Sign Up as a User.</p>
-      <div style="margin-top:12px">
-        <a href="/register" class="btn">Sign Up</a>
-        <a href="/login" class="btn" style="margin-left:8px">User Login</a>
-      </div>
+  <!-- Get Started -->
+  <section class="get-started">
+    <h2>Get Started</h2>
+    <p>Use the Account menu in the navbar to Login or Sign Up as a User or Banker.</p>
+    <div style="margin-top:12px">
+      <a href="/register" class="btn">Sign Up</a>
+      <a href="/login" class="btn" style="margin-left:8px">User Login</a>
+      <a href="/banker-login" class="btn" style="margin-left:8px">Banker Login</a>
     </div>
   </section>
 
@@ -99,10 +356,10 @@
       <div>
         <h4>Quick Links</h4>
         <ul>
-          <li><a href="features.html">Features</a></li>
-          <li><a href="pricing.html">Pricing</a></li>
-          <li><a href="get-started.html">Get Started</a></li>
-          <li><a href="contact.html">Contact</a></li>
+          <li><a href="#">Features</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Get Started</a></li>
+          <li><a href="#">Contact</a></li>
         </ul>
       </div>
       <div>
@@ -111,8 +368,9 @@
         <p>Phone: +91 98765 43210</p>
       </div>
     </div>
+
     <div class="site-foot">
-      <p> 2025 DhanSetu. All Rights Reserved.</p>
+      <p>© 2025 DhanSetu. All Rights Reserved.</p>
       <div class="links">
         <a href="#">Terms</a>
         <a href="#">Privacy</a>

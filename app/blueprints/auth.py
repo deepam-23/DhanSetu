@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
-from ..extensions import db, limiter
+from ..extensions import db, limiter, csrf
 from ..models import User, BankerUser
 
 bp = Blueprint("auth", __name__)
@@ -10,6 +10,7 @@ bp = Blueprint("auth", __name__)
 
 @bp.post("/register")
 @limiter.limit("5/minute")
+@csrf.exempt
 def register():
     data = request.get_json() or {}
     email = (data.get("email") or "").strip().lower()
@@ -35,6 +36,7 @@ def register():
 
 @bp.post("/login")
 @limiter.limit("10/minute")
+@csrf.exempt
 def login():
     data = request.get_json() or {}
     email = (data.get("email") or "").strip().lower()
