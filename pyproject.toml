@@ -1,0 +1,7 @@
+[project]
+name = "dhan-setu"
+version = "1.0.0"
+description = "DhanSetu Loan Platform"
+
+[tool.flask]
+app = "run:app"
