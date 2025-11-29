@@ -12,13 +12,13 @@
   :root {
     --primary: #4f46e5;
     --primary-dark: #4338ca;
-    --bg-dark: #f9fafb;
-    --bg-darker: #ffffff;
-    --text-dark: #111827;
-    --text-light: #4b5563;
-    --border-color: #e5e7eb;
-    --bot-bubble: #f3f4f6;
-    --bot-text: #111827;
+    --bg-dark: #000000;
+    --bg-darker: #000000;
+    --text-dark: #ffffff;
+    --text-light: #cccccc;
+    --border-color: #333333;
+    --bot-bubble: #1a1a1a;
+    --bot-text: #ffffff;
     --user-bubble: #4f46e5;
     --user-text: #ffffff;
     --typing-animation: typing 1.5s infinite;
@@ -44,7 +44,7 @@
 
   .chat-header {
     padding: 18px 24px;
-    background: white;
+    background: #1a1a1a;
     color: var(--text-dark);
     display: flex;
     justify-content: space-between;
@@ -52,7 +52,7 @@
     position: relative;
     z-index: 2;
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   .chat-header-title {
@@ -90,7 +90,7 @@
     padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid var(--border-color);
-    background: white;
+    background: #333333;
     color: var(--text-dark);
     font-size: 0.9rem;
     cursor: pointer;
@@ -206,7 +206,7 @@
 
   .chat-input-container {
     padding: 16px;
-    background: rgba(15, 23, 42, 0.9);
+    background: #000000;
     border-top: 1px solid var(--border-color);
     backdrop-filter: blur(10px);
     position: relative;
@@ -223,22 +223,22 @@
     padding: 16px 20px;
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    background: white;
-    color: var(--text-dark);
+    background: #ffffff;
+    color: #000000;
     font-size: 1.1rem;
     transition: all 0.2s ease;
     resize: none;
     min-height: 60px;
     max-height: 200px;
     line-height: 1.5;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
   #chatbot-text:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-    background: rgba(255, 255, 255, 0.08);
+    background: #ffffff;
   }
 
   #chatbot-form button {
@@ -273,17 +273,17 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: #1a1a1a;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: #333333;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #444444;
   }
 
   /* Responsive adjustments */
@@ -307,7 +307,7 @@
   }
 </style>
 
-<div class="chat-wrapper" style="display: flex; justify-content: center; align-items: center; padding: 20px; min-height: 100vh; background: #f3f4f6;">
+<div class="chat-wrapper" style="display: flex; justify-content: center; align-items: center; padding: 20px; min-height: 100vh; background: #000000;">
   <div class="chat-container">
     <!-- Chat Header -->
     <div class="chat-header">

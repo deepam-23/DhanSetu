@@ -176,12 +176,16 @@
       </select>
     </label>
     <label>
-      <span>Employer / Business Name</span>
-      <input type="text" name="employer" />
+      <span>Age</span>
+      <input type="number" name="age" min="18" max="100" required />
     </label>
   </div>
 
   <div class="grid">
+    <label>
+      <span>Employer / Business Name</span>
+      <input type="text" name="employer" />
+    </label>
     <label>
       <span>Residence Type</span>
       <select name="residence_type">
@@ -191,9 +195,14 @@
         <option value="pg_hostel">PG/Hostel</option>
       </select>
     </label>
+  </div>
+
+  <div class="grid">
     <label>
       <span>Credit Score (optional)</span>
       <input type="number" name="credit_score" min="300" max="900" step="1" placeholder="e.g. 750" />
+    </label>
+    <label>
     </label>
   </div>
 

@@ -70,6 +70,15 @@ def finalize():
     kyc.address = address
     kyc.status = "verified"
     kyc.verified_at = datetime.utcnow()
+    
+    # Commit the changes first to ensure selfie_ref is saved
+    db.session.commit()
+    
+    # Refresh the record to get the latest selfie_ref (in case it was updated after upload)
+    db.session.refresh(kyc)
+    
+    print(f"KYC finalize: Selfie ref = {kyc.selfie_ref}")
+    print(f"KYC finalize: File exists = {os.path.exists(kyc.selfie_ref) if kyc.selfie_ref else False}")
 
     # First render a provisional PDF to compute checksum; then re-render with checksum in QR
     provisional_pdf_bytes, _ = generate_kyc_pdf({

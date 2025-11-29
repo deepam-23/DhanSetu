@@ -1,8 +1,11 @@
 import json
+import os
+import hashlib
 from flask import Blueprint, jsonify, request, send_file
 from datetime import datetime, timedelta
 from collections import defaultdict
 from flask import session
+from werkzeug.utils import secure_filename
 from ..extensions import db, limiter
 from ..models import KycRecord, KycPdf, LoanApplication, User
 from sqlalchemy import func
@@ -47,22 +50,30 @@ def lookup(kyc_id: str):
             kyc = db.session.execute(query).scalars().first()
         if not kyc:
             return jsonify({"error": "KYC not found"}), 404
+        
+        # Get user information for genuine user verification
+        user = db.session.get(User, kyc.user_id) if kyc.user_id else None
+        
+        # Get PDF information
         pdf = db.session.execute(
             db.select(KycPdf).filter_by(kyc_id=norm_id).order_by(KycPdf.id.desc())
         ).scalars().first()
-        if not pdf:
-            return jsonify({"error": "KYC PDF not found"}), 404
-
-        payload = {"kyc_id": kyc.kyc_id, "issued_at": kyc.verified_at.isoformat() + "Z" if kyc.verified_at else "", "pdf_checksum": pdf.pdf_checksum}
+        
+        payload = {"kyc_id": kyc.kyc_id, "issued_at": kyc.verified_at.isoformat() + "Z" if kyc.verified_at else "", "pdf_checksum": pdf.pdf_checksum if pdf else ""}
         sig = sign_payload(payload)
 
         return jsonify({
             "kyc_id": kyc.kyc_id,
-            "name": kyc.name,
+            "full_name": kyc.name,
+            "email": user.email if user else "",
+            "phone": user.phone if user else "",
             "dob": kyc.dob,
             "status": kyc.status,
-            "pdf_checksum": pdf.pdf_checksum,
-            "verification_signature": sig
+            "verified": kyc.status == "verified",
+            "created_at": kyc.created_at.isoformat() + "Z" if kyc.created_at else "",
+            "pdf_checksum": pdf.pdf_checksum if pdf else "",
+            "verification_signature": sig,
+            "loan_id": (db.session.execute(db.select(LoanApplication).filter_by(user_id=kyc.user_id).order_by(LoanApplication.created_at.desc()).limit(1)).scalars().first().id if kyc.user_id else None)
         })
     except Exception as e:
         return jsonify({"error": f"Lookup failed: {str(e) or 'unknown'}"}), 400
@@ -369,3 +380,104 @@ def recent_loans():
             "created_at": a.created_at.isoformat() + "Z" if a.created_at else "",
         })
     return jsonify({"items": out})
+
+
+@bp.post("/kyc/qr-scan")
+@limiter.limit("30/minute")
+def qr_scan():
+    """Handle QR code image upload and extract KYC ID"""
+    try:
+        if 'qr_image' not in request.files:
+            return jsonify({"error": "No QR image uploaded"}), 400
+        
+        file = request.files['qr_image']
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+        
+        if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+            return jsonify({"error": "Invalid image format"}), 400
+        
+        # For now, simulate QR code processing
+        # In a real implementation, you would use a QR code library like pyzbar or qrcode
+        filename = secure_filename(file.filename)
+        temp_path = os.path.join('temp', filename)
+        os.makedirs('temp', exist_ok=True)
+        file.save(temp_path)
+        
+        # Simulate KYC ID extraction from QR code
+        # In production, implement actual QR code reading here
+        simulated_kyc_id = f"KYC{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        
+        # Clean up temp file
+        try:
+            os.remove(temp_path)
+        except:
+            pass
+        
+        # Now lookup the KYC with the extracted ID
+        return lookup(simulated_kyc_id)
+        
+    except Exception as e:
+        return jsonify({"error": f"QR scan failed: {str(e)}"}), 500
+
+
+@bp.post("/kyc/validate-pdf")
+@limiter.limit("30/minute")
+def validate_pdf():
+    """Validate uploaded PDF document"""
+    try:
+        if 'pdf_document' not in request.files:
+            return jsonify({"error": "No PDF document uploaded"}), 400
+        
+        file = request.files['pdf_document']
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+        
+        if not file.filename.lower().endswith('.pdf'):
+            return jsonify({"error": "Invalid file format. Only PDF files are allowed"}), 400
+        
+        # Read file content
+        file_content = file.read()
+        file_size = len(file_content)
+        
+        # Calculate checksum
+        checksum = hashlib.sha256(file_content).hexdigest()
+        
+        # Basic PDF validation
+        if file_size > 10 * 1024 * 1024:  # 10MB limit
+            return jsonify({"error": "File too large. Maximum size is 10MB"}), 400
+        
+        if file_size < 1024:  # 1KB minimum
+            return jsonify({"error": "File too small. May be corrupted"}), 400
+        
+        # Check PDF header
+        if not file_content.startswith(b'%PDF'):
+            return jsonify({"error": "Invalid PDF format"}), 400
+        
+        # Simulate KYC ID extraction from PDF
+        # In production, implement PDF text extraction here
+        simulated_kyc_id = f"KYC{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        
+        # Check if this PDF exists in database
+        existing_pdf = db.session.execute(
+            db.select(KycPdf).filter_by(pdf_checksum=checksum).limit(1)
+        ).scalars().first()
+        
+        issues = []
+        if not existing_pdf:
+            issues.append("PDF not found in database")
+        
+        return jsonify({
+            "valid": existing_pdf is not None,
+            "filename": file.filename,
+            "file_size": file_size,
+            "document_type": "KYC Document",
+            "extracted_kyc_id": simulated_kyc_id,
+            "checksum": checksum,
+            "checksum_valid": existing_pdf is not None,
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "issues": issues
+        })
+        
+    except Exception as e:
+        return jsonify({"error": f"PDF validation failed: {str(e)}"}), 500

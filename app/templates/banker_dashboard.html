@@ -49,6 +49,38 @@
     </div>
 
     <div class="dashboard-grid">
+      <!-- KYC ID Checker -->
+      <div class="dashboard-card">
+        <h3>KYC ID Verification</h3>
+        <div class="kyc-checker">
+          <div class="form-group">
+            <label for="kyc-search-input">Search by KYC ID or Upload QR</label>
+            <div class="search-row">
+              <input type="text" id="kyc-search-input" placeholder="Enter KYC ID (e.g., KYC123456)" />
+              <button class="btn" id="btn-search-kyc">Search</button>
+            </div>
+            <div class="qr-upload">
+              <input type="file" id="qr-upload" accept="image/*" style="display:none" />
+              <button class="btn-secondary" id="btn-upload-qr">📷 Upload QR</button>
+            </div>
+          </div>
+          <div id="kyc-result" class="kyc-result"></div>
+        </div>
+      </div>
+
+      <!-- PDF Document Validator -->
+      <div class="dashboard-card">
+        <h3>PDF Document Validation</h3>
+        <div class="pdf-validator">
+          <div class="form-group">
+            <label for="pdf-upload">Upload KYC PDF for Validation</label>
+            <input type="file" id="pdf-upload" accept=".pdf" />
+            <button class="btn" id="btn-validate-pdf">Validate Document</button>
+          </div>
+          <div id="pdf-result" class="pdf-result"></div>
+        </div>
+      </div>
+
       <!-- Recent KYC -->
       <div class="dashboard-card">
         <h3>Recent KYC Applications</h3>
@@ -142,6 +174,186 @@
           }catch{}
           location.href = '/banker-login';
         });
+      }
+
+      // KYC ID Search functionality
+      const searchKycBtn = document.getElementById('btn-search-kyc');
+      const kycSearchInput = document.getElementById('kyc-search-input');
+      const kycResult = document.getElementById('kyc-result');
+
+      searchKycBtn.addEventListener('click', async () => {
+        const kycId = kycSearchInput.value.trim();
+        if (!kycId) {
+          kycResult.innerHTML = '<div class="error">Please enter a KYC ID</div>';
+          return;
+        }
+
+        kycResult.innerHTML = '<div class="loading">Searching...</div>';
+        
+        try {
+          const response = await fetch(`/api/banker/kyc/${kycId}`, { credentials:'include' });
+          const data = await response.json();
+          
+          if (response.ok) {
+            displayKycResult(data, kycResult);
+          } else {
+            kycResult.innerHTML = `<div class="error">${data.error || 'KYC not found'}</div>`;
+          }
+        } catch (error) {
+          kycResult.innerHTML = '<div class="error">Error searching KYC</div>';
+        }
+      });
+
+      // QR Code Upload functionality
+      const uploadQrBtn = document.getElementById('btn-upload-qr');
+      const qrUpload = document.getElementById('qr-upload');
+
+      uploadQrBtn.addEventListener('click', () => qrUpload.click());
+
+      qrUpload.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        kycResult.innerHTML = '<div class="loading">Processing QR code...</div>';
+        
+        const formData = new FormData();
+        formData.append('qr_image', file);
+
+        try {
+          const response = await fetch('/api/banker/kyc/qr-scan', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
+          const data = await response.json();
+          
+          if (response.ok) {
+            displayKycResult(data, kycResult);
+          } else {
+            kycResult.innerHTML = `<div class="error">${data.error || 'QR scan failed'}</div>`;
+          }
+        } catch (error) {
+          kycResult.innerHTML = '<div class="error">Error scanning QR code</div>';
+        }
+      });
+
+      // PDF Validation functionality
+      const validatePdfBtn = document.getElementById('btn-validate-pdf');
+      const pdfUpload = document.getElementById('pdf-upload');
+      const pdfResult = document.getElementById('pdf-result');
+
+      validatePdfBtn.addEventListener('click', async () => {
+        const file = pdfUpload.files[0];
+        if (!file) {
+          pdfResult.innerHTML = '<div class="error">Please select a PDF file</div>';
+          return;
+        }
+
+        pdfResult.innerHTML = '<div class="loading">Validating document...</div>';
+        
+        const formData = new FormData();
+        formData.append('pdf_document', file);
+
+        try {
+          const response = await fetch('/api/banker/kyc/validate-pdf', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
+          const data = await response.json();
+          
+          if (response.ok) {
+            displayPdfResult(data, pdfResult);
+          } else {
+            pdfResult.innerHTML = `<div class="error">${data.error || 'PDF validation failed'}</div>`;
+          }
+        } catch (error) {
+          pdfResult.innerHTML = '<div class="error">Error validating PDF</div>';
+        }
+      });
+
+      // Display KYC Result
+      function displayKycResult(data, container) {
+        const statusClass = data.verified ? 'verified' : 'pending';
+        const statusText = data.verified ? '✅ Verified' : '⏳ Pending';
+        
+        container.innerHTML = `
+          <div class="kyc-details ${statusClass}">
+            <h4>KYC Found - ${statusText}</h4>
+            <div class="detail-grid">
+              <div><strong>KYC ID:</strong> ${data.kyc_id}</div>
+              <div><strong>Name:</strong> ${data.full_name}</div>
+              <div><strong>Email:</strong> ${data.email}</div>
+              <div><strong>Phone:</strong> ${data.phone}</div>
+              <div><strong>Status:</strong> ${data.status}</div>
+              <div><strong>Created:</strong> ${new Date(data.created_at).toLocaleString()}</div>
+              ${data.loan_id ? `<div><strong>Loan ID:</strong> ${data.loan_id}</div>` : ''}
+            </div>
+            <div class="verification-status">
+              <span class="status-badge ${data.verified ? 'verified' : 'pending'}">
+                ${data.verified ? '✅ Genuine User' : '⚠️ Verification Pending'}
+              </span>
+            </div>
+            <div class="action-buttons">
+              <button class="btn btn-download-pdf" onclick="downloadKycPdf('${data.kyc_id}')">
+                📄 Download KYC PDF
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      // Download KYC PDF function
+      window.downloadKycPdf = async function(kycId) {
+        try {
+          const response = await fetch(`/api/banker/kyc/${kycId}/pdf`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `${kycId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          } else {
+            const errorData = await response.json();
+            alert(`Failed to download PDF: ${errorData.error || 'Unknown error'}`);
+          }
+        } catch (error) {
+          alert(`Error downloading PDF: ${error.message}`);
+        }
+      };
+
+      // Display PDF Result
+      function displayPdfResult(data, container) {
+        const isValid = data.valid;
+        const statusClass = isValid ? 'verified' : 'invalid';
+        
+        container.innerHTML = `
+          <div class="pdf-details ${statusClass}">
+            <h4>PDF Validation - ${isValid ? '✅ Valid' : '❌ Invalid'}</h4>
+            <div class="detail-grid">
+              <div><strong>Document Name:</strong> ${data.filename}</div>
+              <div><strong>File Size:</strong> ${(data.file_size / 1024).toFixed(2)} KB</div>
+              <div><strong>Document Type:</strong> ${data.document_type}</div>
+              <div><strong>Extracted KYC ID:</strong> ${data.extracted_kyc_id || 'N/A'}</div>
+              <div><strong>Checksum Valid:</strong> ${data.checksum_valid ? '✅ Yes' : '❌ No'}</div>
+              <div><strong>Timestamp:</strong> ${new Date(data.timestamp).toLocaleString()}</div>
+            </div>
+            <div class="validation-issues">
+              ${data.issues && data.issues.length > 0 ? 
+                `<h5>Issues Found:</h5><ul>${data.issues.map(issue => `<li>${issue}</li>`).join('')}</ul>` : 
+                '<div class="no-issues">✅ No issues detected</div>'
+              }
+            </div>
+          </div>
+        `;
       }
 
       // Fetch summary
@@ -374,6 +586,203 @@
       border: 1px solid rgba(255,255,255,.2);
       color: #fff;
     }
+
+    /* KYC Verification Styles */
+    .kyc-checker,
+    .pdf-validator {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .kyc-checker .form-group,
+    .pdf-validator .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .kyc-checker label,
+    .pdf-validator label {
+      color: #fff;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .search-row input {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+      border-radius: 6px;
+    }
+
+    .qr-upload {
+      margin-top: 8px;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.1);
+      color: #fff;
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,.2);
+    }
+
+    .kyc-result,
+    .pdf-result {
+      margin-top: 16px;
+    }
+
+    .kyc-details,
+    .pdf-details {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .kyc-details.verified,
+    .pdf-details.verified {
+      border-color: rgba(34,197,94,.5);
+      background: rgba(34,197,94,.1);
+    }
+
+    .kyc-details.pending,
+    .pdf-details.invalid {
+      border-color: rgba(239,68,68,.5);
+      background: rgba(239,68,68,.1);
+    }
+
+    .kyc-details h4,
+    .pdf-details h4 {
+      color: #fff;
+      margin: 0 0 12px 0;
+      font-size: 16px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .detail-grid div {
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .detail-grid strong {
+      color: #fff;
+    }
+
+    .verification-status {
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .action-buttons {
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .btn-download-pdf {
+      background: rgba(34,197,94,.2);
+      color: #22c55e;
+      border: 1px solid rgba(34,197,94,.3);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .btn-download-pdf:hover {
+      background: rgba(34,197,94,.3);
+      transform: translateY(-1px);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-badge.verified {
+      background: rgba(34,197,94,.2);
+      color: #22c55e;
+      border: 1px solid rgba(34,197,94,.3);
+    }
+
+    .status-badge.pending {
+      background: rgba(239,68,68,.2);
+      color: #ef4444;
+      border: 1px solid rgba(239,68,68,.3);
+    }
+
+    .validation-issues {
+      margin-top: 12px;
+    }
+
+    .validation-issues h5 {
+      color: #fff;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .validation-issues ul {
+      margin: 0;
+      padding-left: 20px;
+      color: #ef4444;
+    }
+
+    .validation-issues li {
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .no-issues {
+      color: #22c55e;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .loading,
+    .error {
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .loading {
+      background: rgba(255,255,255,.1);
+      color: #ccc;
+    }
+
+    .error {
+      background: rgba(239,68,68,.2);
+      color: #ef4444;
+      border: 1px solid rgba(239,68,68,.3);
+    }
     
     @media (max-width: 768px) {
       .dashboard-grid {
@@ -385,6 +794,14 @@
       }
       
       .filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .search-row {
+        flex-direction: column;
+      }
+
+      .detail-grid {
         grid-template-columns: 1fr;
       }
     }

@@ -26,12 +26,19 @@ def generate_kyc_pdf(kyc_data: dict, qr_text: str, selfie_path: str | None = Non
     # Optional selfie in top-right
     if selfie_path and os.path.exists(selfie_path):
         try:
+            print(f"PDF service: Adding selfie from path: {selfie_path}")
             selfie_reader = ImageReader(selfie_path)
             c.drawImage(selfie_reader, width - 220, height - 260, 170, 170, preserveAspectRatio=True, mask='auto')
             c.setFont("Helvetica", 9)
             c.drawString(width - 220, height - 270, "Photo")
-        except Exception:
+        except Exception as e:
+            print(f"PDF service: Error adding selfie: {e}")
             pass
+    else:
+        if selfie_path:
+            print(f"PDF service: Selfie path provided but file not found: {selfie_path}")
+        else:
+            print("PDF service: No selfie path provided")
 
     qr = qrcode.QRCode(
         version=None,

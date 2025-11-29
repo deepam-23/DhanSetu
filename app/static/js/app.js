@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const income = Number(d.income||0);
         const emi = Number(d.emi||0);
         const credit = Number(d.credit_score||0);
+        const age = Number(d.age||0);
         const emp = (d.employment_type||'').toLowerCase();
         const res = (d.residence_type||'').toLowerCase();
 
@@ -54,13 +55,41 @@ document.addEventListener('DOMContentLoaded', ()=>{
         // Capacity with stability modifiers
         let capacity = Math.max(0, income - emi);
         let boost = 0;
+        
+        // Age-based eligibility factors
+        if (age < 21) {
+          boost -= 0.10;  // Penalty for very young applicants
+        } else if (age < 25) {
+          boost -= 0.05;  // Small penalty for young adults
+        } else if (age >= 21 && age <= 60) {
+          if (age >= 25 && age <= 45) {
+            boost += 0.08;  // Prime age bracket
+          } else if (age > 45 && age <= 55) {
+            boost += 0.05;  // Good age bracket
+          } else if (age > 55 && age <= 60) {
+            boost += 0.02;  // Acceptable age bracket
+          }
+        } else {
+          boost -= 0.15;  // Penalty for applicants over 60 (retirement risk)
+        }
+        
+        // Credit score factors
         if(credit >= 800) boost += 0.12; else if(credit >= 750) boost += 0.08; else if(credit >= 700) boost += 0.04;
-        if(emp === 'salaried') boost += 0.05; else if(emp === 'self_employed') boost += 0.02;
+        
+        // Employment factors
+        if(emp === 'salaried') boost += 0.05; 
+        else if(emp === 'self_employed') boost += 0.02;
+        else if(emp === 'student') boost -= 0.10;
+        else if(emp === 'retired') boost -= 0.05;
+        
+        // Residence factors
         if(res === 'owned') boost += 0.03; else if(res === 'parental') boost += 0.01;
+        
         const boostedCapacity = Math.round(capacity * (1 + boost));
 
-        const eligible = boostedCapacity >= emiNeeded && amount>0 && term>0;
+        const eligible = boostedCapacity >= emiNeeded && amount>0 && term>0 && age >= 21 && age <= 60;
         const reasons = [];
+        if(age) reasons.push(`Age: <b>${age}</b> (${age < 21 || age > 60 ? 'Not eligible' : 'Eligible range'})`);
         if(credit) reasons.push(`Credit score adj: <b>${Math.round(boost*100)}%</b> total boost`);
         if(emp) reasons.push(`Employment: <b>${emp}</b>`);
         if(res) reasons.push(`Residence: <b>${res}</b>`);

@@ -30,6 +30,7 @@ def save_draft():
         income = float(d.get("income") or 0)
         emi_existing = float(d.get("emi") or 0)
         credit = float(d.get("credit_score") or 0)
+        age = int(d.get("age") or 0)
         emp = str(d.get("employment_type") or '').lower()
         res = str(d.get("residence_type") or '').lower()
 
@@ -39,16 +40,40 @@ def save_draft():
 
         capacity = max(0.0, income - emi_existing)
         boost = 0.0
+        
+        # Age-based eligibility factors
+        if age < 21:
+            boost -= 0.10  # Penalty for very young applicants
+        elif age < 25:
+            boost -= 0.05  # Small penalty for young adults
+        elif age >= 21 and age <= 60:
+            if age >= 25 and age <= 45:
+                boost += 0.08  # Prime age bracket
+            elif age > 45 and age <= 55:
+                boost += 0.05  # Good age bracket
+            elif age > 55 and age <= 60:
+                boost += 0.02  # Acceptable age bracket
+        else:
+            boost -= 0.15  # Penalty for applicants over 60 (retirement risk)
+            
+        # Credit score factors
         if credit >= 800: boost += 0.12
         elif credit >= 750: boost += 0.08
         elif credit >= 700: boost += 0.04
+        
+        # Employment factors
         if emp == 'salaried': boost += 0.05
         elif emp == 'self_employed': boost += 0.02
+        elif emp == 'student': boost -= 0.10
+        elif emp == 'retired': boost -= 0.05
+        
+        # Residence factors
         if res == 'owned': boost += 0.03
         elif res == 'parental': boost += 0.01
+        
         boosted_capacity = int(round(capacity * (1 + boost)))
 
-        eligible = (boosted_capacity >= emi_needed and amount>0 and term>0)
+        eligible = (boosted_capacity >= emi_needed and amount>0 and term>0 and age >= 21 and age <= 60)
         loan.prediction = 'eligible' if eligible else 'ineligible'
     except Exception:
         # If parsing fails, leave prediction unchanged

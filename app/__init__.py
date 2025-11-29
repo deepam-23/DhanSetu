@@ -37,16 +37,19 @@ def create_app():
     from .blueprints.loan import bp as loan_bp
     from .blueprints.kyc import bp as kyc_bp
     from .blueprints.web import bp as web_bp
+    from .blueprints.banker import bp as banker_bp
 
     # Exempt API blueprints from CSRF (using JSON and token-based/session auth)
     csrf.exempt(auth_bp)
     csrf.exempt(loan_bp)
     csrf.exempt(kyc_bp)
+    csrf.exempt(banker_bp)
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(loan_bp, url_prefix="/api/loan")
     app.register_blueprint(kyc_bp, url_prefix="/api/kyc")
     app.register_blueprint(web_bp)
+    app.register_blueprint(banker_bp, url_prefix="/api/banker")
 
     @app.get("/api")
     def api_index():
@@ -55,7 +58,8 @@ def create_app():
             "status": "ok",
             "endpoints": [
                 "/api/auth/register", "/api/auth/login", "/api/auth/logout",
-                "/api/loan/save-draft", "/api/loan/my", "/api/kyc/start", "/api/kyc/finalize", "/api/kyc/me", "/api/kyc/me/pdf"
+                "/api/loan/save-draft", "/api/loan/my", "/api/kyc/start", "/api/kyc/finalize", "/api/kyc/me", "/api/kyc/me/pdf",
+                "/api/banker/kyc/<kyc_id>", "/api/banker/kyc/qr-scan", "/api/banker/kyc/validate-pdf", "/api/banker/analytics/summary"
             ]
         })
 

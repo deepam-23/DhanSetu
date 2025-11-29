@@ -93,6 +93,10 @@ body.home-bg {
   color: #ffffff;
 }
 
+.nav .brand .brand-text span {
+  color: #5c63ff;
+}
+
 .nav .links a {
   color: var(--white);
   text-decoration: none;

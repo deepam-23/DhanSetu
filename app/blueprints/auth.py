@@ -17,21 +17,33 @@ def register():
     password = data.get("password") or ""
     name = data.get("name")
 
+    print(f"Registration attempt: email={email}, name={name}, password_length={len(password) if password else 0}")
+
     try:
         validate_email(email, check_deliverability=False)
-    except EmailNotValidError:
+    except EmailNotValidError as e:
+        print(f"Email validation failed: {e}")
         return jsonify({"error": "Invalid email format"}), 400
 
     if not password or len(password) < 8:
+        print(f"Password validation failed: length={len(password) if password else 0}")
         return jsonify({"error": "Password must be at least 8 characters"}), 400
 
-    if db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none():
+    existing_user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none()
+    if existing_user:
+        print(f"Email already registered: {email}")
         return jsonify({"error": "Email already registered"}), 400
 
-    user = User(email=email, name=name, password_hash=generate_password_hash(password))
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({"message": "Registered successfully"}), 201
+    try:
+        user = User(email=email, name=name, password_hash=generate_password_hash(password))
+        db.session.add(user)
+        db.session.commit()
+        print(f"User created successfully: ID={user.id}, email={user.email}")
+        return jsonify({"message": "Registered successfully"}), 201
+    except Exception as e:
+        print(f"Database error during user creation: {e}")
+        db.session.rollback()
+        return jsonify({"error": "Registration failed due to server error"}), 500
 
 
 @bp.post("/login")

@@ -106,7 +106,9 @@
       }
       
       try {
-        const response = await fetch('/auth/register', {
+        console.log('Attempting registration with:', { name, email, passwordLength: password.length });
+        
+        const response = await fetch('/api/auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -114,7 +116,9 @@
           body: JSON.stringify({ name, email, password })
         });
         
+        console.log('Registration response status:', response.status);
         const data = await response.json();
+        console.log('Registration response data:', data);
         
         if (response.ok) {
           showAlert('Account created successfully! Redirecting to login...', 'success');
@@ -125,6 +129,7 @@
           showAlert(data.error || 'Registration failed', 'error');
         }
       } catch (error) {
+        console.error('Registration error:', error);
         showAlert('An error occurred. Please try again.', 'error');
       }
     });

@@ -20,6 +20,16 @@ def register_page():
     return render_template("auth_register.html")
 
 
+@bp.get("/banker-login")
+def banker_login_page():
+    return render_template("banker_login.html")
+
+
+@bp.get("/banker-dashboard")
+def banker_dashboard_page():
+    return render_template("banker_dashboard.html")
+
+
 @bp.get("/loan")
 @login_required
 def loan_page():

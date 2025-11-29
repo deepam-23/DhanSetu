@@ -146,7 +146,7 @@
     const alert = byId('b-login-alert');
     if(res.ok){
       alert.innerHTML='<div class="alert success">Logged in</div>';
-      setTimeout(()=>location.href='/banker', 600);
+      setTimeout(()=>location.href='/banker-dashboard', 600);
     } else {
       alert.innerHTML='<div class="alert error">'+(res.data.error||'Login failed')+'</div>';
     }
